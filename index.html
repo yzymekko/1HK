@@ -1331,7 +1331,7 @@ body.module-view #addActionTop{display:none}
   ACTIONS.window={name:'창 제어',icon:'window',desc:'창 활성화·최소화·이동·닫기',defaults:{action:'activate',targetMode:'active',target:'',x:0,y:0,w:1000,h:700,delay:150}};
   ACTIONS.pageWait={name:'페이지 준비 대기',icon:'page',desc:'대상 창이 준비될 때까지 기다림',defaults:{targetMode:'active',target:'',condition:'exist',timeout:10,interval:250,delay:0}};
   ACTIONS.imageWait={name:'화면 인식 대기',icon:'image',desc:'기준 이미지가 나타나거나 사라질 때까지 대기',defaults:{image:'',condition:'appear',timeout:15,variation:35,delay:0}};
-  ACTIONS.folderOpen={name:'폴더 열기·활성화',icon:'folder',desc:'탐색기 폴더를 열거나 기존 창 활성화',defaults:{path:'',behavior:'reuse',delay:200}};
+  ACTIONS.folderOpen={name:'파일·폴더 열기',icon:'folder',desc:'특정 파일이나 폴더를 열거나 기존 창 활성화',defaults:{targetKind:'folder',path:'',behavior:'reuse',delay:200}};
   ACTIONS.link={name:'링크 열기',icon:'link',desc:'URL을 지정 브라우저로 열기',defaults:{url:'',browser:'default',delay:300}};
 
   const ADV=new Set(['window','pageWait','imageWait','folderOpen','link']);
@@ -1341,7 +1341,7 @@ body.module-view #addActionTop{display:none}
       case'window':{const a={activate:'활성화',minimize:'최소화',maximize:'최대화',restore:'복원',close:'닫기',move:'이동·크기'}[n.action]||n.action;const t=n.targetMode==='active'?'현재 창':n.targetMode==='exe'?`APP ${n.target||'미지정'}`:`창 ${n.target||'미지정'}`;return`${a} · ${t}`}
       case'pageWait':{const t=n.targetMode==='active'?'현재 창':n.targetMode==='exe'?`APP ${n.target||'미지정'}`:`창 ${n.target||'미지정'}`;return`${t} · 최대 ${n.timeout||0}초`}
       case'imageWait':return`${n.image||'이미지 미지정'} · ${n.condition==='disappear'?'사라질 때':'나타날 때'}`;
-      case'folderOpen':return n.path||'폴더 미지정';
+      case'folderOpen':{const k=n.targetKind==='file'?'파일':'폴더',m=n.behavior==='new'?'새 창':'창 활성화';return`${k} · ${n.path||'경로 미지정'} · ${m}`}
       case'link':return`${n.browser==='default'?'기본':n.browser} · ${n.url||'URL 미지정'}`;
       default:return oldDescribeV06(n);
     }
@@ -1358,7 +1358,13 @@ body.module-view #addActionTop{display:none}
       case'window':return `${selectField('창 동작','action',[['activate','활성화'],['minimize','최소화'],['maximize','최대화'],['restore','복원'],['close','닫기'],['move','이동 · 크기']],d.action||'activate')}${advTargetFields(d)}${d.action==='move'?`<div class="grid2">${field('X','x',d.x,'number')}${field('Y','y',d.y,'number')}${field('너비','w',d.w,'number')}${field('높이','h',d.h,'number')}</div>`:''}`;
       case'pageWait':return `${advTargetFields(d)}${selectField('준비 조건','condition',[['exist','창이 존재할 때'],['active','창이 활성화될 때']],d.condition||'exist')}<div class="grid2">${field('최대 대기(초)','timeout',d.timeout,'number')}${field('확인 간격(ms)','interval',d.interval,'number')}</div><div class="inspector-note">${ICONS.wait}<span>대상 창이 조건을 만족하면 즉시 다음 동작으로 넘어갑니다.</span></div>`;
       case'imageWait':return `${field('기준 이미지','image',d.image||'')}${selectField('대기 조건','condition',[['appear','이미지가 나타날 때'],['disappear','이미지가 사라질 때']],d.condition||'appear')}<div class="grid2">${field('최대 대기(초)','timeout',d.timeout,'number')}${field('허용 오차','variation',d.variation,'number')}</div><div class="inspector-note">${ICONS.image}<span>지금은 이미지 파일/식별값을 저장합니다. 실제 ImageSearch 실행은 1.3 AHK 생성기 단계에서 연결합니다.</span></div>`;
-      case'folderOpen':return `${field('폴더 경로','path',d.path||'')}${selectField('열기 방식','behavior',[['reuse','열려 있으면 활성화'],['new','항상 새 탐색기 창']],d.behavior||'reuse')}<div class="inspector-note">${ICONS.folder}<span>업무 폴더처럼 반복해서 여는 위치는 「열려 있으면 활성화」가 가장 깔끔합니다.</span></div>`;
+      case'folderOpen':{
+        const kind=d.targetKind==='file'?'file':'folder';
+        const beh=d.behavior==='new'?'new':'reuse';
+        const pathLabel=kind==='file'?'파일 경로':'폴더 경로';
+        const pathPh=kind==='file'?'예: C:\\Users\\Desktop\\보고서.xlsx':'예: C:\\Users\\Desktop\\업무폴더';
+        return `<div class="field"><label>열기 대상</label><div class="insp-seg2" role="radiogroup" aria-label="열기 대상"><button type="button" class="insp-seg-btn ${kind==='folder'?'active':''}" data-seg-field="targetKind" data-seg-val="folder">폴더</button><button type="button" class="insp-seg-btn ${kind==='file'?'active':''}" data-seg-field="targetKind" data-seg-val="file">파일</button></div></div><div class="field"><label>${pathLabel}</label><input class="input" data-field="path" value="${esc(d.path||'')}" placeholder="${esc(pathPh)}"></div><div class="field"><label>열기 방식</label><div class="insp-seg2" role="radiogroup" aria-label="열기 방식"><button type="button" class="insp-seg-btn ${beh==='reuse'?'active':''}" data-seg-field="behavior" data-seg-val="reuse">창 활성화</button><button type="button" class="insp-seg-btn ${beh==='new'?'active':''}" data-seg-field="behavior" data-seg-val="new">새 창</button></div></div><div class="inspector-note">${ICONS.folder}<span>${kind==='file'?(beh==='reuse'?'이미 열려 있는 파일 창(제목에 파일명 포함)이 있으면 활성화하고, 없으면 파일을 엽니다.':'기존 창 여부와 관계없이 지정한 파일을 새로 실행합니다.'):(beh==='reuse'?'해당 폴더가 탐색기에 이미 열려 있으면 그 창을 활성화하고, 없으면 탐색기로 엽니다.':'항상 새 탐색기 창으로 폴더를 엽니다.')}</span></div>`;
+      }
       case'link':return `${field('URL','url',d.url||'')}${selectField('브라우저','browser',[['default','Windows 기본 브라우저'],['whale','Whale'],['chrome','Chrome'],['edge','Edge']],d.browser||'default')}`;
       default:return'';
     }
@@ -1375,6 +1381,7 @@ body.module-view #addActionTop{display:none}
     body+=`<div class="inspector-actions"><button class="btn danger" id="inspectorDelete">삭제</button><button class="btn" id="inspectorDuplicate">복제</button><button class="btn primary" id="inspectorSave">저장</button></div>`;
     $('#inspectorBody').innerHTML=body;
     $$('[data-field]',$('#inspectorBody')).forEach(el=>{const evt=el.tagName==='SELECT'?'change':'input';el.addEventListener(evt,()=>{let v=el.value;if(el.type==='number')v=Number(v)||0;ui.inspectorDraft[el.dataset.field]=v;if(['targetMode','action'].includes(el.dataset.field))openInspector(id,false)})});
+    $$('[data-seg-field]',$('#inspectorBody')).forEach(btn=>btn.addEventListener('click',()=>{ui.inspectorDraft[btn.dataset.segField]=btn.dataset.segVal;openInspector(id,false)}));
     $('#inspectorSave').onclick=()=>{const draft=clone(ui.inspectorDraft);commit(()=>{const x=locate6(id);if(x)x.array[x.index]=draft});closeInspector();toast(`${ACTIONS[d.type].name} 설정을 저장했습니다.`,'good')};
     $('#inspectorDelete').onclick=()=>{if(confirm(`이 「${ACTIONS[d.type].name}」 동작을 삭제할까요?`)){commit(()=>{const x=locate6(id);if(x)x.array.splice(x.index,1);ui.selectedNodeIds?.delete(id)});closeInspector();toast('삭제했습니다.')}};
     $('#inspectorDuplicate').onclick=()=>{commit(()=>{const x=locate6(id);if(!x)return;const cp=clone(x.node);cp.id=uid('node');x.array.splice(x.index+1,0,cp)});toast('동작을 복제했습니다.','good')};
@@ -1983,7 +1990,7 @@ body.module-view #addActionTop{display:none}
         const p=`${where} · ${path.join('.')}`;
         if(['run'].includes(n.type)&&!String(n.target||'').trim())add('error',p,'APP 실행 대상이 비어 있습니다.');
         if(n.type==='stage'&&n.targetType!=='none'&&!String(n.target||'').trim())add('error',p,'APP 단계 대상이 비어 있습니다.');
-        if(n.type==='folderOpen'&&!String(n.path||'').trim())add('error',p,'폴더 경로가 비어 있습니다.');
+        if(n.type==='folderOpen'&&!String(n.path||'').trim())add('error',p,`${n.targetKind==='file'?'파일':'폴더'} 경로가 비어 있습니다.`);
         if(n.type==='link'&&!String(n.url||'').trim())add('error',p,'URL이 비어 있습니다.');
         if(n.type==='imageWait'&&!String(n.image||'').trim())add('error',p,'기준 이미지가 비어 있습니다.');
         if(['clipSave','clipRestore'].includes(n.type)&&!String(n.varName||'').trim())add('error',p,'클립보드 보관 이름이 비어 있습니다.');
@@ -2090,7 +2097,7 @@ body.module-view #addActionTop{display:none}
         out.push(I+`if !E1_WaitImage(${q(n.image||'')}, ${q(n.condition||'appear')}, ${Math.max(0,Number(n.timeout)||15)*1000}, ${Math.max(0,Math.min(255,Number(n.variation)||35))}) {`);
         out.push(I+'    '+`E1_Notice(${q('화면 인식 대기 시간이 초과되었습니다.')})`);out.push(I+'    return');out.push(I+'}');break;
       }
-      case'folderOpen':out.push(I+`E1_OpenFolder(${q(n.path||'')}, ${n.behavior==='new'?'false':'true'})`);emitDelay12(n,depth,out);break;
+      case'folderOpen':out.push(I+`E1_OpenPath(${q(n.path||'')}, ${q(n.targetKind==='file'?'file':'folder')}, ${n.behavior==='new'?'false':'true'})`);emitDelay12(n,depth,out);break;
       case'link':out.push(I+`E1_OpenLink(${q(n.url||'')}, ${q(n.browser||'default')})`);emitDelay12(n,depth,out);break;
       case'clipCopy':
         out.push(I+`E1_CopyCandidate := E1_CopyStable(${Math.max(50,Number(n.timeout)||800)}, ${Math.max(0,Math.floor(Number(n.retries)||0))})`);
@@ -2213,13 +2220,14 @@ body.module-view #addActionTop{display:none}
       'E1_OpenFolder(path, reuse := true) {',
       '    if (path = "")',
       '        return false',
+      '    norm := RTrim(StrLower(path), "\\")',
       '    if reuse {',
       '        try {',
       '            shell := ComObject("Shell.Application")',
       '            for win in shell.Windows {',
       '                try {',
-      '                    p := win.Document.Folder.Self.Path',
-      '                    if (StrLower(p) = StrLower(path)) {',
+      '                    p := RTrim(StrLower(win.Document.Folder.Self.Path), "\\")',
+      '                    if (p = norm) {',
       '                        WinActivate "ahk_id " win.HWND',
       '                        return true',
       '                    }',
@@ -2233,6 +2241,34 @@ body.module-view #addActionTop{display:none}
       '        return false',
       '    }',
       '    return true',
+      '}',
+      '',
+      'E1_OpenPath(path, kind := "folder", reuse := true) {',
+      '    if (path = "")',
+      '        return false',
+      '    if (kind != "file")',
+      '        return E1_OpenFolder(path, reuse)',
+      '    SplitPath path, &fileName, , , &nameNoExt',
+      '    if reuse && (fileName != "") {',
+      '        try {',
+      '            for hwnd in WinGetList() {',
+      '                title := WinGetTitle("ahk_id " hwnd)',
+      '                if (title = "")',
+      '                    continue',
+      '                if InStr(title, fileName) || (nameNoExt != "" && InStr(title, nameNoExt)) {',
+      '                    WinActivate "ahk_id " hwnd',
+      '                    return true',
+      '                }',
+      '            }',
+      '        }',
+      '    }',
+      '    try {',
+      '        Run Chr(34) path Chr(34)',
+      '        return true',
+      '    } catch {',
+      '        E1_Notice("파일 열기 실패: " path)',
+      '        return false',
+      '    }',
       '}',
       '',
       'E1_OpenLink(url, browser := "default") {',
@@ -7049,6 +7085,35 @@ body .app .statusbar{
   color:var(--text);
 }
 .hk-nl-btn.active{
+  background:var(--text);
+  color:var(--bg);
+  font-weight:700;
+}
+.insp-seg2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:4px;
+  padding:3px;
+  border-radius:9px;
+  background:var(--bg);
+  border:1px solid var(--line);
+}
+.insp-seg-btn{
+  height:30px;
+  border:1px solid transparent;
+  border-radius:6px;
+  background:transparent;
+  color:var(--text2);
+  font-family:var(--sans);
+  font-size:12px;
+  font-weight:600;
+  transition:background .14s var(--ease),color .14s var(--ease);
+}
+.insp-seg-btn:hover:not(.active){
+  background:var(--elevated);
+  color:var(--text);
+}
+.insp-seg-btn.active{
   background:var(--text);
   color:var(--bg);
   font-weight:700;
