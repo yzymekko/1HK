@@ -5383,18 +5383,18 @@ ${sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlfo
 
 <style id="yzy1hk-industrial-redesign">
 /* ==========================================================================
-   yzy-1HK Studio — Industrial Dark Minimalism (Refined Monochrome + #FF4F00)
-   Base #09090B · Surface #111114 · Hover #18181C · Disciplined Signal Orange
+   yzy-1HK Studio 2.0 — Commercial Industrial Dark Minimalism
+   Full-Width Sticky Header + Labeled Horizontal Nav + Floating Bento Chassis
    ========================================================================== */
 :root,
 html[data-theme="dark"]{
   --bg:#09090B;
-  --chassis:#0C0C0F;
+  --chassis:#0D0D10;
   --panel:#111114;
-  --panel2:#141418;
+  --panel2:#151519;
   --elevated:#18181C;
   --surface-subtle:#131317;
-  --hover:#1F1F25;
+  --hover:#1E1E24;
   --active-bg:#18181C;
   --line:rgba(255,255,255,.08);
   --line2:rgba(255,255,255,.05);
@@ -5424,12 +5424,11 @@ html[data-theme="dark"]{
   --danger:#F87171;
   --danger-soft:rgba(239,68,68,.12);
   --danger-border:rgba(239,68,68,.30);
-  --topbar-bg:rgba(9,9,11,.82);
+  --topbar-bg:rgba(9,9,11,.86);
+  --subnav-bg:rgba(12,12,15,.92);
   --overlay-bg:rgba(0,0,0,.74);
   --code-bg:#070709;
   --code-text:#E4E4E7;
-  --tooltip-bg:#18181C;
-  --tooltip-text:#FAFAFA;
   --keycap-bg:#18181C;
   --keycap-edge:#050507;
   --shadow-xs:0 1px 2px rgba(0,0,0,.35);
@@ -5437,19 +5436,21 @@ html[data-theme="dark"]{
   --shadow-md:0 16px 40px rgba(0,0,0,.58);
   --shadow-lg:0 28px 72px rgba(0,0,0,.76);
   --inset-hi:inset 0 1px 0 rgba(255,255,255,.06);
-  --spotlight:radial-gradient(820px 320px at 50% -60px,rgba(255,255,255,.04),transparent 72%),radial-gradient(520px 220px at 50% -50px,rgba(255,79,0,.045),transparent 70%);
+  --spotlight:radial-gradient(760px 280px at 50% -40px,rgba(255,255,255,.045),transparent 72%),radial-gradient(460px 180px at 50% -40px,rgba(255,79,0,.04),transparent 70%);
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --ease:cubic-bezier(.16,1,.3,1);
-  --rail:60px;
-  --top:60px;
+  --rail:0px;
+  --top:58px;
+  --subnav:46px;
+  --library:296px;
   --status:30px;
   font-family:"Pretendard Variable",Pretendard,"Inter",ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;
   color-scheme:dark;
 }
 
 html[data-theme="light"]{
-  --bg:#FAFAFA;
-  --chassis:#F4F4F5;
+  --bg:#F4F4F5;
+  --chassis:#FAFAFA;
   --panel:#FFFFFF;
   --panel2:#F9F9FB;
   --elevated:#FFFFFF;
@@ -5484,12 +5485,11 @@ html[data-theme="light"]{
   --danger:#DC2626;
   --danger-soft:#FEE2E2;
   --danger-border:#FCA5A5;
-  --topbar-bg:rgba(250,250,250,.86);
+  --topbar-bg:rgba(255,255,255,.88);
+  --subnav-bg:rgba(250,250,250,.94);
   --overlay-bg:rgba(9,9,11,.42);
   --code-bg:#09090B;
   --code-text:#E4E4E7;
-  --tooltip-bg:#18181B;
-  --tooltip-text:#FAFAFA;
   --keycap-bg:#FFFFFF;
   --keycap-edge:#D4D4D8;
   --shadow-xs:0 1px 2px rgba(9,9,11,.04);
@@ -5497,7 +5497,7 @@ html[data-theme="light"]{
   --shadow-md:0 14px 36px rgba(9,9,11,.11);
   --shadow-lg:0 24px 64px rgba(9,9,11,.16);
   --inset-hi:inset 0 1px 0 rgba(255,255,255,.85);
-  --spotlight:radial-gradient(820px 300px at 50% -60px,rgba(9,9,11,.03),transparent 72%);
+  --spotlight:radial-gradient(760px 260px at 50% -40px,rgba(9,9,11,.028),transparent 72%);
   color-scheme:light;
 }
 
@@ -5523,138 +5523,56 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 *::-webkit-scrollbar-thumb:hover{background:var(--muted);background-clip:content-box}
 ::selection{background:var(--orange-soft);color:var(--text)}
 
-/* Left Navigation Rail — Minimal Titanium Console */
-.rail{
+/* ==========================================================================
+   1. STRUCTURAL APP SHELL — Topbar + Horizontal Labeled Nav + Floating Bento
+   ========================================================================== */
+body .app{
+  height:100%!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:var(--top) var(--subnav) minmax(0,1fr) var(--status)!important;
   background:var(--bg)!important;
-  border-right:1px solid var(--line)!important;
-  padding:11px 8px!important;
-  gap:6px!important;
-  overflow:visible!important;
-  z-index:45!important;
-}
-.rail-logo{
-  width:40px!important;
-  height:40px!important;
-  border-radius:10px!important;
-  background:var(--panel)!important;
-  color:var(--text)!important;
-  border:1px solid var(--line-strong)!important;
-  box-shadow:var(--inset-hi),0 2px 0 var(--keycap-edge)!important;
-  margin-bottom:12px!important;
-  position:relative!important;
-  transition:transform .18s var(--ease),background .18s var(--ease),border-color .18s var(--ease);
-}
-.rail-logo::after{
-  content:"";
-  position:absolute;
-  top:5px;
-  right:5px;
-  width:5px;
-  height:5px;
-  border-radius:50%;
-  background:var(--accent);
-  box-shadow:0 0 8px rgba(255,79,0,.7);
-}
-.rail-logo:hover{
-  background:var(--elevated)!important;
-  border-color:rgba(255,255,255,.26)!important;
-  transform:translateY(-1px);
-}
-.rail>.nav-btn{
-  width:40px!important;
-  height:40px!important;
-  color:var(--muted)!important;
-  border-radius:10px!important;
-  border:1px solid transparent!important;
-  transition:background .16s var(--ease),color .16s var(--ease),border-color .16s var(--ease);
-  position:relative!important;
-}
-.rail>.nav-btn:hover:not(:disabled){
-  background:var(--panel)!important;
-  color:var(--text2)!important;
-}
-.rail>.nav-btn.active{
-  background:var(--elevated)!important;
-  color:var(--text)!important;
-  border-color:var(--line-strong)!important;
-  box-shadow:var(--inset-hi)!important;
-}
-.rail>.nav-btn.active svg{color:var(--text)}
-.rail>.nav-btn.active::before{
-  content:"";
-  position:absolute;
-  left:-9px;
-  top:50%;
-  transform:translateY(-50%);
-  width:2.5px;
-  height:18px;
-  border-radius:0 3px 3px 0;
-  background:var(--accent);
-  box-shadow:0 0 8px rgba(255,79,0,.55);
-}
-.rail-version{
-  color:var(--muted)!important;
-  font-family:var(--mono);
-  font-size:9px!important;
-  font-weight:600!important;
-  font-variant-numeric:tabular-nums;
-  letter-spacing:.03em;
-  opacity:.75;
-}
-.rail>button[data-tip]::after{
-  content:attr(data-tip);
-  position:absolute;
-  left:calc(100% + 12px);
-  top:50%;
-  transform:translateY(-50%) translateX(-4px);
-  padding:5px 10px;
-  border-radius:7px;
-  background:var(--tooltip-bg);
-  color:var(--tooltip-text);
-  border:1px solid var(--line-strong);
-  box-shadow:var(--shadow-md),var(--inset-hi);
-  font-size:11px;
-  font-weight:600;
-  line-height:1.25;
-  white-space:nowrap;
-  pointer-events:none;
-  opacity:0;
-  visibility:hidden;
-  transition:opacity .12s var(--ease),transform .12s var(--ease),visibility .12s var(--ease);
-  z-index:1000;
-}
-.rail>button[data-tip]:hover::after{
-  opacity:1;
-  visibility:visible;
-  transform:translateY(-50%) translateX(0);
 }
 
-/* Topbar — Clean, Decluttered Glassmorphic Bar */
-.topbar{
+/* Row 1: Full-Width Commercial Sticky Header */
+body .app .topbar{
+  grid-column:1!important;
+  grid-row:1!important;
   background:var(--topbar-bg)!important;
   backdrop-filter:blur(14px) saturate(140%)!important;
   -webkit-backdrop-filter:blur(14px) saturate(140%)!important;
-  border-bottom:1px solid var(--line)!important;
-  padding:0 18px 0 16px!important;
-  gap:10px!important;
+  border-bottom:1px solid var(--line2)!important;
+  padding:0 20px!important;
+  gap:12px!important;
+  z-index:35!important;
 }
 .top-brand{
   border-radius:8px!important;
-  padding:4px 8px 4px 2px!important;
-  gap:8px!important;
+  padding:5px 8px 5px 2px!important;
+  gap:9px!important;
   min-width:auto!important;
+  width:auto!important;
   transition:background .16s var(--ease);
 }
 .top-brand:hover{background:var(--elevated)!important}
 .top-brand img{display:none!important}
+.brand-led{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 10px rgba(255,79,0,.65);
+  flex:none;
+}
 .brand-copy{
+  display:flex!important;
   flex-direction:row!important;
   align-items:center!important;
   gap:8px!important;
 }
 .brand-copy strong{
   font-family:var(--mono)!important;
-  font-size:14.5px!important;
+  font-size:15px!important;
   font-weight:700!important;
   letter-spacing:-.03em!important;
   color:var(--text)!important;
@@ -5671,7 +5589,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   letter-spacing:.02em!important;
   font-variant-numeric:tabular-nums;
 }
-.top-divider{background:var(--line)!important;height:18px!important}
+.top-divider{display:block!important;background:var(--line)!important;height:18px!important}
 .breadcrumb{
   font-size:12.5px!important;
   color:var(--muted)!important;
@@ -5697,7 +5615,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   padding:4px 8px;
   border-radius:9999px;
   background:transparent;
-  border:1px solid transparent;
+  border:0;
   margin-right:4px!important;
 }
 .save-dot{
@@ -5715,7 +5633,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   box-shadow:0 0 6px rgba(239,68,68,.6)!important;
 }
 
-/* Declutter utility buttons in topbar — ghost style until hovered */
+/* Decluttered Ghost Utility Controls in Topbar */
 .top-actions .btn:not(.primary):not(.ahk-build-btn){
   background:transparent!important;
   border-color:transparent!important;
@@ -5729,26 +5647,240 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   transform:none!important;
 }
 
-/* High-contrast Vercel/Linear style AHK Export CTA in Topbar */
-.ahk-build-btn{
-  background:var(--text)!important;
-  border-color:var(--text)!important;
-  color:var(--bg)!important;
+/* Flagship Signal Orange Primary CTA in Topbar: AHK v2 Build */
+.top-actions .ahk-build-btn{
+  background:var(--accent)!important;
+  border-color:var(--accent)!important;
+  color:#FFFFFF!important;
   font-family:var(--mono)!important;
   font-size:11.5px!important;
   font-weight:700!important;
-  padding:0 12px!important;
-  margin-left:4px;
-  box-shadow:0 1px 2px rgba(0,0,0,.25)!important;
+  padding:0 14px!important;
+  margin-left:6px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 2px 12px rgba(255,79,0,.28)!important;
 }
-.ahk-build-btn:hover:not(:disabled){
-  opacity:.9;
-  background:var(--text)!important;
-  border-color:var(--text)!important;
-  color:var(--bg)!important;
+.top-actions .ahk-build-btn:hover:not(:disabled){
+  background:var(--accent-hover)!important;
+  border-color:var(--accent-hover)!important;
+  color:#FFFFFF!important;
+  transform:translateY(-1px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 6px 18px rgba(255,79,0,.36)!important;
 }
 
-/* Buttons & Mechanical Keycaps */
+/* Row 2: Horizontal Labeled Navigation Strip (Replaces old 60px icon rail!) */
+body .app .rail{
+  grid-column:1!important;
+  grid-row:2!important;
+  width:100%!important;
+  height:var(--subnav)!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  background:var(--subnav-bg)!important;
+  border-right:0!important;
+  border-bottom:1px solid var(--line)!important;
+  padding:0 20px!important;
+  gap:4px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  scrollbar-width:none!important;
+  z-index:30!important;
+}
+body .app .rail::-webkit-scrollbar{display:none}
+/* Hide redundant rail-logo (fixes broken Command/Automation duplicate!) & spacer */
+body .app .rail .rail-logo,
+body .app .rail .nav-spacer,
+body .app .rail .rail-version{
+  display:none!important;
+}
+body .app .rail > .nav-btn{
+  width:auto!important;
+  min-width:auto!important;
+  height:32px!important;
+  min-height:32px!important;
+  flex:0 0 auto!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:7px!important;
+  padding:0 12px!important;
+  border-radius:8px!important;
+  border:1px solid transparent!important;
+  background:transparent!important;
+  color:var(--text2)!important;
+  font-size:12.5px!important;
+  font-weight:550!important;
+  letter-spacing:-.01em;
+  white-space:nowrap!important;
+  position:relative!important;
+  transition:background .16s var(--ease),color .16s var(--ease),border-color .16s var(--ease);
+}
+body .app .rail > .nav-btn > svg{
+  width:14px!important;
+  height:14px!important;
+  min-width:14px!important;
+  min-height:14px!important;
+  opacity:.72;
+  transition:opacity .16s ease;
+}
+body .app .rail > .nav-btn:hover:not(:disabled){
+  background:var(--elevated)!important;
+  color:var(--text)!important;
+}
+body .app .rail > .nav-btn:hover:not(:disabled) > svg{opacity:1}
+body .app .rail > .nav-btn.active{
+  background:var(--elevated)!important;
+  border-color:var(--line)!important;
+  color:var(--text)!important;
+  font-weight:650!important;
+  box-shadow:var(--inset-hi)!important;
+}
+body .app .rail > .nav-btn.active > svg{
+  opacity:1;
+  color:var(--text)!important;
+}
+/* Razor-sharp Signal Orange bottom indicator on active tab */
+body .app .rail > .nav-btn.active::after{
+  content:"";
+  position:absolute;
+  left:10px;
+  right:10px;
+  bottom:-8px;
+  height:2px;
+  border-radius:2px 2px 0 0;
+  background:var(--accent);
+  box-shadow:0 0 10px rgba(255,79,0,.6);
+}
+.nav-label{
+  display:inline-block;
+  line-height:1;
+}
+
+/* Row 3: Floating Bento Workspace Frame */
+body .app .main{
+  grid-column:1!important;
+  grid-row:3!important;
+  padding:14px 16px!important;
+  background:var(--bg)!important;
+  overflow:hidden!important;
+}
+
+/* Split Layouts become Floating Bento Card Pairs with 14px Gutters */
+.automation-layout,
+.collections-layout,
+.replace-layout,
+.keymap-layout,
+.files-layout{
+  gap:14px!important;
+  background:transparent!important;
+}
+
+/* Floating Left Master Sidebar Cards */
+.library,
+.collection-library,
+.replace-sidebar,
+.keymap-sidebar,
+.files-sidebar,
+.clip13-sidebar{
+  background:var(--panel)!important;
+  border:1px solid var(--line)!important;
+  border-radius:16px!important;
+  box-shadow:var(--inset-hi),var(--shadow-xs)!important;
+  overflow:hidden!important;
+}
+
+/* Floating Right Main Studio Cards */
+.workspace,
+.collection-workspace,
+.replace-main,
+.keymap-main,
+.files-main,
+.clipboard-layout,
+.clipboard-layout.clip13,
+.guide14,
+.module-placeholder{
+  background:var(--panel)!important;
+  border:1px solid var(--line)!important;
+  border-radius:16px!important;
+  box-shadow:var(--inset-hi),var(--shadow-xs)!important;
+  overflow:hidden!important;
+  position:relative!important;
+}
+.canvas,
+.collection-canvas{
+  background:transparent!important;
+  background-image:none!important;
+}
+.workspace::before,
+.replace-main::before,
+.keymap-main::before,
+.files-main::before,
+.clipboard-layout::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:var(--spotlight);
+  z-index:0;
+}
+.canvas-inner,
+.replace-main-inner,
+.keymap-main-inner,
+.files-main-inner,
+.clipboard-inner,
+.collection-canvas-inner{
+  position:relative;
+  z-index:1;
+}
+.canvas-inner{
+  max-width:1040px!important;
+  padding:32px 36px 80px!important;
+}
+.canvas-head{margin-bottom:22px!important}
+
+/* Editorial Monospace Kicker above Automation Title */
+.canvas-title::before{
+  content:"AUTOMATION WORKFLOW";
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-family:var(--mono);
+  font-size:10.5px;
+  font-weight:600;
+  letter-spacing:.10em;
+  color:var(--orange-ink);
+  margin-bottom:8px;
+}
+
+/* Row 4: Full-Width Industrial Telemetry Statusbar */
+body .app .statusbar{
+  grid-column:1!important;
+  grid-row:4!important;
+  background:var(--bg)!important;
+  border-top:1px solid var(--line)!important;
+  color:var(--muted)!important;
+  font-family:var(--mono);
+  font-size:10.5px!important;
+  font-variant-numeric:tabular-nums;
+  padding:0 20px!important;
+}
+.statusbar b{color:var(--text2)!important;font-weight:600!important}
+.status-pill.good{color:var(--green)!important}
+.status-landing-link{
+  color:var(--text2)!important;
+  text-decoration:none;
+  padding:2px 8px;
+  border-radius:6px;
+  transition:color .14s ease,background .14s ease;
+}
+.status-landing-link:hover{
+  color:var(--text)!important;
+  background:var(--elevated);
+}
+
+/* ==========================================================================
+   2. BUTTONS, KEYCAPS & TYPOGRAPHY
+   ========================================================================== */
 .btn{
   height:34px!important;
   border:1px solid var(--line)!important;
@@ -5765,19 +5897,33 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   border-color:var(--line-strong)!important;
   color:var(--text)!important;
 }
-.btn:active:not(:disabled){transform:translateY(.5px)}
+.btn:active:not(:disabled){transform:scale(.98)}
+
+/* Primary Buttons inside workspace/modals: Crisp High-Contrast White (Vercel/Linear) */
 .btn.primary{
+  background:var(--text)!important;
+  border-color:var(--text)!important;
+  color:var(--bg)!important;
+  font-weight:700!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.22)!important;
+}
+.btn.primary:hover:not(:disabled){
+  opacity:.9;
+  transform:translateY(-1px);
+}
+/* Final Save / Download AHK CTA in modals gets Signal Orange */
+.ahk-foot .btn.primary,
+.inspector-actions .btn.primary{
   background:var(--accent)!important;
   border-color:var(--accent)!important;
   color:#FFFFFF!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 2px 10px rgba(255,79,0,.24)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 2px 10px rgba(255,79,0,.26)!important;
 }
-.btn.primary:hover:not(:disabled){
+.ahk-foot .btn.primary:hover:not(:disabled),
+.inspector-actions .btn.primary:hover:not(:disabled){
+  opacity:1;
   background:var(--accent-hover)!important;
   border-color:var(--accent-hover)!important;
-  color:#FFFFFF!important;
-  transform:translateY(-1px);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 6px 18px rgba(255,79,0,.32)!important;
 }
 .btn.ghost{
   background:transparent!important;
@@ -5808,47 +5954,57 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   box-shadow:var(--inset-hi);
 }
 
-/* Statusbar — Industrial Telemetry Strip */
-.statusbar{
-  background:var(--bg)!important;
-  border-top:1px solid var(--line)!important;
-  color:var(--muted)!important;
-  font-family:var(--mono);
-  font-size:10.5px!important;
-  font-variant-numeric:tabular-nums;
-  padding:0 16px!important;
-}
-.statusbar b{color:var(--text2)!important;font-weight:600!important}
-.status-pill.good{color:var(--green)!important}
-.status-landing-link{
-  color:var(--text2)!important;
-  text-decoration:none;
-  padding:2px 7px;
-  border-radius:5px;
-  transition:color .14s ease,background .14s ease;
-}
-.status-landing-link:hover{
+/* Page Headings & Kickers */
+.canvas-title h1,
+.clipboard-title h1,
+.replace-title h1,
+.keymap-title h1,
+.files-title h1,
+.clip13-title h1,
+.guide14-hero h1,
+.module-placeholder h1{
+  font-size:clamp(26px,2.6vw,34px)!important;
+  font-weight:700!important;
+  letter-spacing:-.04em!important;
+  line-height:1.15!important;
   color:var(--text)!important;
-  background:var(--elevated);
+  margin-bottom:12px!important;
+}
+.clipboard-kicker,
+.replace-kicker,
+.keymap-kicker,
+.files-kicker,
+.clip13-title .kicker,
+.module-kicker{
+  font-family:var(--mono)!important;
+  font-size:10.5px!important;
+  font-weight:600!important;
+  letter-spacing:.10em!important;
+  color:var(--orange-ink)!important;
+  text-transform:uppercase;
+}
+.clipboard-title p,
+.replace-title p,
+.keymap-title p,
+.files-title p,
+.clip13-title p,
+.guide14-hero p,
+.module-placeholder p{
+  font-size:14px!important;
+  line-height:1.6!important;
+  color:var(--text2)!important;
 }
 
-/* Shared Sidebars & Master Lists */
-.library,
-.collection-library,
-.replace-sidebar,
-.keymap-sidebar,
-.files-sidebar,
-.clip13-sidebar{
-  background:var(--chassis)!important;
-  border-right:1px solid var(--line)!important;
-}
+/* ==========================================================================
+   3. SIDEBARS & MASTER LISTS
+   ========================================================================== */
 .library-head,
 .collection-library-head,
 .replace-side-head,
 .keymap-side-head,
 .files-side-head,
 .clip13-side-head{
-  background:var(--chassis)!important;
+  background:var(--panel)!important;
   border-bottom:1px solid var(--line2)!important;
   padding:16px 14px 12px!important;
 }
@@ -5867,7 +6023,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 .keymap-side-title span,
 .files-side-title span,
 .clip13-count{
-  background:var(--panel)!important;
+  background:var(--bg)!important;
   border:1px solid var(--line)!important;
   color:var(--text2)!important;
   font-family:var(--mono);
@@ -5884,19 +6040,19 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 .replace-group-row select,
 .keymap-group-row select,
 .clip13-group-row select{
-  background:var(--panel)!important;
+  background:var(--elevated)!important;
   border:1px solid var(--line)!important;
   color:var(--text)!important;
   border-radius:8px!important;
   box-shadow:var(--inset-hi);
-  transition:border-color .16s var(--ease),background .16s var(--ease),color .16s var(--ease);
+  transition:border-color .16s var(--ease),background .16s var(--ease);
 }
 .group-switch:hover,
 .mini-add:hover,
 .replace-square:hover,
 .keymap-square:hover,
 .clip13-square:hover{
-  background:var(--elevated)!important;
+  background:var(--hover)!important;
   border-color:var(--line-strong)!important;
   color:var(--text)!important;
 }
@@ -5918,7 +6074,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 .files-search:focus-within,
 .clip13-search:focus-within,
 .action-search:focus-within{
-  background:var(--panel)!important;
+  background:var(--chassis)!important;
   border-color:var(--line-strong)!important;
   box-shadow:0 0 0 3px var(--accent-soft)!important;
 }
@@ -5951,7 +6107,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   font-weight:600!important;
   letter-spacing:.08em!important;
   font-variant-numeric:tabular-nums;
-  padding-inline:14px!important;
+  padding:12px 14px 8px!important;
 }
 .library-toolbar button,
 .collection-library-toolbar button,
@@ -5963,7 +6119,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   font-family:inherit;
   font-size:11px!important;
   font-weight:650!important;
-  padding:3px 7px;
+  padding:3px 8px;
   border-radius:6px;
   transition:background .15s var(--ease),color .15s var(--ease);
 }
@@ -5976,41 +6132,39 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   background:var(--elevated);
   color:var(--text)!important;
 }
-
 .library-foot,
 .replace-sidebar-foot,
 .keymap-side-foot,
 .files-side-foot,
 .clip13-foot{
-  background:var(--chassis)!important;
+  background:var(--panel)!important;
   border-top:1px solid var(--line2)!important;
   color:var(--muted)!important;
   font-family:var(--mono);
   font-size:10px!important;
   font-variant-numeric:tabular-nums;
 }
-
 .bulk-tools{
-  background:var(--chassis)!important;
+  background:var(--panel)!important;
   border-bottom:1px solid var(--line2)!important;
 }
 .bulk-tools .bulk-label{color:var(--muted)!important;font-family:var(--mono)}
 .bulk-tools button{
-  background:var(--panel)!important;
+  background:var(--elevated)!important;
   border:1px solid var(--line)!important;
   color:var(--text2)!important;
   border-radius:6px!important;
   font-size:10.5px!important;
 }
 .bulk-tools button:hover{
-  background:var(--elevated)!important;
+  background:var(--hover)!important;
   border-color:var(--line-strong)!important;
   color:var(--text)!important;
 }
 
-/* List Items — Crisp Titanium Monochrome */
+/* List Items */
 .auto-list,.replace-list,.keymap-list,.files-list,.collection-list{
-  padding-inline:10px!important;
+  padding:4px 10px 12px!important;
 }
 .auto-item,
 .collection-item,
@@ -6029,7 +6183,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 .keymap-item:hover,
 .files-item:hover,
 .clip13-item:hover{
-  background:var(--panel)!important;
+  background:var(--panel2)!important;
   border-color:var(--line)!important;
 }
 .auto-item.active,
@@ -6042,9 +6196,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   border-color:var(--line-strong)!important;
   box-shadow:var(--inset-hi);
 }
-.auto-item.active .active-line{
-  background:var(--text)!important;
-}
+.auto-item.active .active-line{background:var(--accent)!important}
 .auto-title,
 .collection-item strong,
 .replace-item strong,
@@ -6090,7 +6242,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   color:var(--text)!important;
 }
 .collection-item-icon,.files-item-icon{
-  background:var(--panel)!important;
+  background:var(--bg)!important;
   border:1px solid var(--line)!important;
   color:var(--text2)!important;
 }
@@ -6098,104 +6250,19 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   background:var(--line-strong)!important;
 }
 
-/* Main Canvases & Workspaces — Editorial Depth + Subtle Spotlight */
-.workspace,
-.canvas,
-.collections-layout,
-.collection-workspace,
-.collection-canvas,
-.clipboard-layout,
-.clipboard-layout.clip13,
-.replace-layout,
-.replace-main,
-.keymap-layout,
-.keymap-main,
-.files-layout,
-.files-main,
-.guide14,
-.module-placeholder{
-  background:var(--bg)!important;
-  background-image:none!important;
-}
-.canvas::before,
-.replace-main::before,
-.keymap-main::before,
-.files-main::before,
-.clipboard-layout::before{
-  content:"";
-  position:fixed;
-  inset:var(--top) 0 var(--status) var(--rail);
-  pointer-events:none;
-  background:var(--spotlight);
-  z-index:0;
-}
-.canvas-inner,
-.replace-main-inner,
-.keymap-main-inner,
-.files-main-inner,
-.clipboard-inner{
-  position:relative;
-  z-index:1;
-}
-.canvas-inner{
-  max-width:1120px!important;
-  padding:34px 36px 84px!important;
-}
-.canvas-head{margin-bottom:22px!important}
-
-/* Page Headings & Kickers */
-.canvas-title h1,
-.clipboard-title h1,
-.replace-title h1,
-.keymap-title h1,
-.files-title h1,
-.clip13-title h1,
-.guide14-hero h1,
-.module-placeholder h1{
-  font-size:clamp(24px,2.4vw,30px)!important;
-  font-weight:700!important;
-  letter-spacing:-.04em!important;
-  line-height:1.18!important;
-  color:var(--text)!important;
-  margin-bottom:10px!important;
-}
-.clipboard-kicker,
-.replace-kicker,
-.keymap-kicker,
-.files-kicker,
-.clip13-title .kicker,
-.module-kicker{
-  font-family:var(--mono)!important;
-  font-size:10.5px!important;
-  font-weight:600!important;
-  letter-spacing:.10em!important;
-  color:var(--orange-ink)!important;
-  text-transform:uppercase;
-}
-.clipboard-title p,
-.replace-title p,
-.keymap-title p,
-.files-title p,
-.clip13-title p,
-.guide14-hero p,
-.module-placeholder p{
-  font-size:13.5px!important;
-  line-height:1.6!important;
-  color:var(--text2)!important;
-}
-
-/* Meta Chips & Tactile Anodized Keycap Badges */
+/* ==========================================================================
+   4. WORKFLOW STUDIO, META CHIPS, BUILD BAR & NODES
+   ========================================================================== */
 .meta-chip{
   height:28px!important;
   padding:0 11px!important;
   border:1px solid var(--line)!important;
   border-radius:9999px!important;
-  background:var(--panel)!important;
+  background:var(--bg)!important;
   color:var(--text2)!important;
   font-size:11.5px!important;
   font-weight:500;
   font-variant-numeric:tabular-nums;
-  box-shadow:var(--inset-hi);
 }
 .meta-chip.hotkey{
   color:var(--text)!important;
@@ -6205,6 +6272,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   font-family:var(--mono);
   font-weight:600;
   border-radius:7px!important;
+  box-shadow:var(--inset-hi);
   transition:background .15s var(--ease),border-color .15s var(--ease),transform .12s var(--ease);
 }
 .meta-chip.hotkey:hover{
@@ -6234,7 +6302,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   color:var(--text)!important;
 }
 .collection-entry-icon{
-  background:var(--panel)!important;
+  background:var(--bg)!important;
   color:var(--text2)!important;
   border:1px solid var(--line)!important;
   box-shadow:none!important;
@@ -6248,20 +6316,18 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   font-variant-numeric:tabular-nums;
 }
 
-/* Buildbar, Selectionbar, Workflow Nodes & Groups */
 .buildbar{
-  background:var(--panel)!important;
+  background:var(--chassis)!important;
   border:1px solid var(--line)!important;
   border-radius:14px!important;
   padding:10px 14px!important;
-  margin-bottom:16px!important;
+  margin-bottom:18px!important;
   gap:8px!important;
-  box-shadow:var(--inset-hi),var(--shadow-xs)!important;
+  box-shadow:var(--inset-hi)!important;
 }
 .buildbar-note{
   color:var(--muted)!important;
   font-size:11px!important;
-  font-family:inherit;
   letter-spacing:-.01em;
 }
 .selectionbar{
@@ -6278,9 +6344,9 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   color:var(--text)!important;
   box-shadow:none!important;
 }
-.flow{gap:8px!important}
+.flow{gap:9px!important}
 
-/* Refined Solid Industrial Empty State (No bleak dashed boxes) */
+/* Elevated Empty State Card */
 .flow-empty,
 .replace-editor-empty,
 .keymap-editor-empty,
@@ -6290,10 +6356,10 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 .clip-empty-tools{
   border:1px solid var(--line)!important;
   border-radius:16px!important;
-  background:linear-gradient(180deg,var(--panel) 0%,var(--chassis) 100%)!important;
+  background:radial-gradient(420px 180px at 50% 0%,rgba(255,255,255,.035),transparent 70%),var(--chassis)!important;
   color:var(--muted)!important;
-  padding:64px 32px!important;
-  box-shadow:var(--inset-hi),var(--shadow-xs)!important;
+  padding:72px 32px!important;
+  box-shadow:var(--inset-hi)!important;
 }
 .flow-empty strong,
 .replace-editor-empty strong,
@@ -6302,7 +6368,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 .clip13-empty strong,
 .collection-empty strong{
   color:var(--text)!important;
-  font-size:15px!important;
+  font-size:16px!important;
   font-weight:650!important;
   letter-spacing:-.02em;
   margin-bottom:6px!important;
@@ -6311,37 +6377,38 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 .replace-editor-empty span,
 .keymap-editor-empty span{
   color:var(--text2)!important;
-  font-size:12.5px!important;
+  font-size:13px!important;
 }
 .flow-empty .empty-icon,
 .collection-empty-icon{
-  width:48px!important;
-  height:48px!important;
+  width:50px!important;
+  height:50px!important;
   background:var(--elevated)!important;
   border:1px solid var(--line-strong)!important;
   border-bottom:2px solid var(--keycap-edge)!important;
   color:var(--text)!important;
-  border-radius:12px!important;
+  border-radius:13px!important;
   box-shadow:var(--inset-hi);
   margin-bottom:16px!important;
 }
 
+/* Workflow Step Cards */
 .node-row,
 .group-wrap{
-  background:var(--panel)!important;
+  background:var(--panel2)!important;
   border:1px solid var(--line)!important;
   border-radius:14px!important;
   box-shadow:var(--inset-hi),var(--shadow-xs)!important;
   transition:border-color .18s var(--ease),background .18s var(--ease),transform .18s var(--ease),box-shadow .18s var(--ease)!important;
 }
 .node-row{
-  min-height:60px!important;
+  min-height:62px!important;
   padding:10px 14px!important;
 }
 .node-row:hover{
-  background:var(--panel2)!important;
+  background:var(--elevated)!important;
   border-color:var(--line-strong)!important;
-  transform:translateY(-1px);
+  transform:translateY(-2px);
   box-shadow:var(--inset-hi),var(--shadow-sm)!important;
 }
 .node-row.selected,
@@ -6369,13 +6436,13 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 }
 .tree-row:before{background:var(--line)!important}
 .group-head{
-  background:var(--panel2)!important;
+  background:var(--elevated)!important;
   border-bottom:1px solid var(--line2)!important;
   color:var(--text)!important;
 }
 .group-children{background:transparent!important;border-color:var(--line)!important}
 .group-badge{
-  background:var(--elevated)!important;
+  background:var(--bg)!important;
   color:var(--text2)!important;
   border:1px solid var(--line)!important;
   font-family:var(--mono);
@@ -6387,10 +6454,9 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   width:34px!important;
   height:34px!important;
   border-radius:9px!important;
-  background:var(--elevated)!important;
+  background:var(--bg)!important;
   color:var(--text2)!important;
   border:1px solid var(--line)!important;
-  box-shadow:var(--inset-hi);
 }
 .node-row.selected .node-icon{
   background:var(--panel)!important;
@@ -6429,11 +6495,13 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 .flow [data-node].drop-after{box-shadow:0 2.5px 0 var(--accent)!important;border-color:var(--accent)!important}
 .flow [data-node].drop-inside{box-shadow:0 0 0 3px var(--accent-ring)!important;border-color:var(--accent)!important;background:var(--active-bg)!important}
 
-/* Right Inspector — Precision Hardware Panel */
+/* ==========================================================================
+   5. RIGHT INSPECTOR & FORM CONTROLS
+   ========================================================================== */
 .inspector{
   background:var(--chassis)!important;
   border-left:1px solid var(--line)!important;
-  box-shadow:var(--shadow-md)!important;
+  box-shadow:none!important;
 }
 .inspector-head{
   border-bottom:1px solid var(--line2)!important;
@@ -6513,7 +6581,6 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   color:var(--text)!important;
 }
 
-/* Form Inputs, Selects, Textareas, Hardware Key Buttons */
 .field label,
 .replace-field label,
 .keymap-field>label,
@@ -6588,7 +6655,9 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 }
 .keymap-key-button svg,.clip-key-button svg{color:var(--text2)!important}
 
-/* Module Cards (Replace, Keymap, Files, Clipboard, Collections, Guide) */
+/* ==========================================================================
+   6. MODULE CARDS, TABS & MODALS
+   ========================================================================== */
 .replace-editor,
 .replace-preview,
 .keymap-editor,
@@ -6608,7 +6677,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 .guide14-card,
 .runtime-card,
 .module-status-card{
-  background:var(--panel)!important;
+  background:var(--panel2)!important;
   border:1px solid var(--line)!important;
   border-radius:16px!important;
   box-shadow:var(--inset-hi),var(--shadow-xs)!important;
@@ -6620,7 +6689,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 }
 .replace-footer,
 .keymap-footer{
-  background:var(--panel2)!important;
+  background:var(--chassis)!important;
   border-top:1px solid var(--line2)!important;
 }
 .replace-editor-head strong,
@@ -6638,9 +6707,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 .runtime-card-head strong,
 .replace-preview-head strong,
 .keymap-preview-head strong,
-.module-status-copy strong{
-  color:var(--text)!important;
-}
+.module-status-copy strong{color:var(--text)!important}
 .replace-editor-head small,
 .keymap-editor-head small,
 .files-hero-copy small,
@@ -6653,9 +6720,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 .runtime-card-head p,
 .replace-preview-head span,
 .keymap-preview-head span,
-.module-status-copy span{
-  color:var(--text2)!important;
-}
+.module-status-copy span{color:var(--text2)!important}
 .replace-editor-icon,
 .keymap-editor-icon,
 .files-hero-icon,
@@ -6737,7 +6802,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   color:var(--danger)!important;
 }
 .clipboard-action{
-  background:var(--panel2)!important;
+  background:var(--panel)!important;
   border:1px solid var(--line)!important;
   border-radius:12px!important;
   color:var(--text)!important;
@@ -6746,7 +6811,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 .clipboard-action:hover{
   background:var(--elevated)!important;
   border-color:var(--line-strong)!important;
-  transform:translateY(-1px);
+  transform:translateY(-2px);
 }
 .clip-action-icon,.clip-card-index{
   background:var(--elevated)!important;
@@ -6810,13 +6875,8 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   box-shadow:var(--shadow-lg),var(--inset-hi)!important;
   color:var(--text)!important;
 }
-.dialog-head,.ahk-head{
-  border-bottom:1px solid var(--line2)!important;
-}
-.dialog-head strong,.ahk-head-copy strong{
-  color:var(--text)!important;
-  letter-spacing:-.02em;
-}
+.dialog-head,.ahk-head{border-bottom:1px solid var(--line2)!important}
+.dialog-head strong,.ahk-head-copy strong{color:var(--text)!important;letter-spacing:-.02em}
 .ahk-head-copy small{color:var(--muted)!important}
 .dialog-foot,.ahk-foot{
   border-top:1px solid var(--line2)!important;
@@ -6885,10 +6945,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   border-color:var(--line)!important;
   color:var(--text)!important;
 }
-.hotkey-current strong{
-  color:var(--text)!important;
-  font-family:var(--mono);
-}
+.hotkey-current strong{color:var(--text)!important;font-family:var(--mono)}
 .mod-card{
   background:var(--panel2)!important;
   border-color:var(--line)!important;
@@ -6898,10 +6955,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   background:var(--elevated)!important;
   border-color:var(--line-strong)!important;
 }
-.mod-name{
-  color:var(--text2)!important;
-  font-family:var(--mono);
-}
+.mod-name{color:var(--text2)!important;font-family:var(--mono)}
 .mod-card.active .mod-name{color:var(--text)!important}
 .mod-sides{border-top-color:var(--line2)!important}
 .mod-side{
@@ -6909,10 +6963,7 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
   border-right-color:var(--line2)!important;
   color:var(--muted)!important;
 }
-.mod-side.on{
-  background:var(--text)!important;
-  color:var(--bg)!important;
-}
+.mod-side.on{background:var(--text)!important;color:var(--bg)!important}
 .capture-box{
   background:var(--bg)!important;
   border-color:var(--line-strong)!important;
@@ -6968,15 +7019,43 @@ hr{border:0!important;border-top:1px solid var(--line)!important}
 .toast.good{background:#0B261A!important;border-color:rgba(34,197,94,.35);color:#FAFAFA!important}
 .toast.warn{background:#2E1D08!important;border-color:rgba(245,158,11,.35);color:#FAFAFA!important}
 
-/* Dark-mode accent adjustments for v146 custom node colors */
 html[data-theme="dark"] .node-row[data-accent-color],
 html[data-theme="dark"] .group-head[data-accent-color]{
-  background-color:var(--panel)!important;
+  background-color:var(--panel2)!important;
 }
 
+/* ==========================================================================
+   7. RESPONSIVE (1440px / 768px / 375px — Zero Horizontal Overflow)
+   ========================================================================== */
 @media(max-width:980px){
-  .top-brand{padding:4px 6px!important}
+  :root{--library:250px}
+  body .app .topbar{padding:0 14px!important}
+  body .app .rail{padding:0 14px!important}
+  body .app .main{padding:10px 12px!important}
   .canvas-inner{padding:24px 20px 72px!important}
+  .inspector{top:calc(var(--top) + var(--subnav))!important}
+}
+@media(max-width:700px){
+  body .app .topbar{padding:0 10px!important;gap:6px!important}
+  .brand-copy strong{white-space:nowrap!important;font-size:14px!important}
+  .brand-copy small,.top-divider,.breadcrumb{display:none!important}
+  .top-actions{gap:2px!important}
+  .top-actions .btn:not(.ahk-build-btn){width:30px!important;padding:0!important}
+  body .app .rail{padding:0 10px!important;gap:2px!important}
+  body .app .rail > .nav-btn{padding:0 10px!important;font-size:12px!important}
+  body .app .main{padding:8px!important}
+  .buildbar{flex-wrap:wrap!important}
+  .library,
+  .replace-sidebar,
+  .keymap-sidebar,
+  .files-sidebar,
+  .collection-library{
+    left:0!important;
+    top:calc(var(--top) + var(--subnav))!important;
+    border-radius:0 16px 16px 0!important;
+  }
+  .top-actions .ahk-build-btn{width:auto!important;padding:0 10px!important;margin-left:2px!important}
+  .top-actions .ahk-build-btn .txt{display:inline!important}
 }
 @media(prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}
@@ -6989,6 +7068,14 @@ html[data-theme="dark"] .group-head[data-accent-color]{
   const root=document.documentElement;
   const MOON='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
   const SUN='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
+  const NAV_LABELS={
+    automationNavBtn:'자동화',
+    replaceNavBtn:'텍스트 대치',
+    keymapNavBtn:'키매핑',
+    clipboardNavBtn:'클립보드',
+    filesNavBtn:'파일작업',
+    guideNavBtn:'사용 안내'
+  };
 
   function currentTheme(){
     return root.getAttribute('data-theme')==='light'?'light':'dark';
@@ -7010,6 +7097,12 @@ html[data-theme="dark"] .group-head[data-accent-color]{
   function mountIndustrialBrand(){
     const brand=document.getElementById('topBrand');
     if(!brand)return;
+    if(!brand.querySelector('.brand-led')){
+      const led=document.createElement('span');
+      led.className='brand-led';
+      led.setAttribute('aria-hidden','true');
+      brand.prepend(led);
+    }
     const titleEl=brand.querySelector('.brand-copy strong');
     const subEl=brand.querySelector('.brand-copy small');
     if(titleEl)titleEl.textContent='yzy-1HK';
@@ -7042,11 +7135,15 @@ html[data-theme="dark"] .group-head[data-accent-color]{
     }
   }
 
-  function syncRailTooltips(){
-    document.querySelectorAll('.rail > button').forEach(btn=>{
-      const tip=btn.getAttribute('title')||btn.getAttribute('aria-label');
-      if(tip&&!btn.getAttribute('data-tip')){
-        btn.setAttribute('data-tip',tip);
+  function enhanceHorizontalNav(){
+    document.querySelectorAll('.rail > .nav-btn').forEach(btn=>{
+      const label=NAV_LABELS[btn.id]||btn.getAttribute('title')||btn.getAttribute('aria-label')||'';
+      if(label&&!btn.querySelector('.nav-label')){
+        const sp=document.createElement('span');
+        sp.className='nav-label';
+        sp.textContent=label;
+        btn.appendChild(sp);
+        btn.setAttribute('aria-label',label);
         btn.removeAttribute('title');
       }
     });
@@ -7054,10 +7151,10 @@ html[data-theme="dark"] .group-head[data-accent-color]{
 
   mountIndustrialBrand();
   mountControls();
-  syncRailTooltips();
+  enhanceHorizontalNav();
   const rail=document.querySelector('.rail');
   if(rail&&window.MutationObserver){
-    new MutationObserver(syncRailTooltips).observe(rail,{childList:true,subtree:false,attributes:true,attributeFilter:['title']});
+    new MutationObserver(enhanceHorizontalNav).observe(rail,{childList:true,subtree:false});
   }
 })();
 </script>
