@@ -792,7 +792,7 @@ function parseManualHotkey(text){const h={ctrl:'',alt:'',shift:'',win:'',key:'',
 function openHotkeyEditor({value,mode='shortcut',title='단축키',onApply,exceptAutoId=''}){let draft=clone(value||{ctrl:'',alt:'',shift:'',win:'',key:'',numLock:''}),tab='capture',capturing=false,cleanupCapture=null;draft.numLock=normalizeNumLock15(draft.numLock);const triggerMode=mode==='shortcut';const o=document.createElement('div');o.className='overlay';o.innerHTML=`<section class="dialog"><div class="dialog-head"><strong>${esc(title)}</strong><button class="dialog-close">${ICONS.close}</button></div><div class="dialog-body"><div class="hotkey-current"><span class="hotkey-current-icon">${ICONS.keyboard}</span><span><small>현재 입력</small><strong id="hkCurrent"></strong></span><span class="hotkey-auto">${mode==='shortcut'?'자동화':'동작'}</span></div><div style="font-size:9px;color:#98a2b3;margin:0 1px 5px">보조키 · 같은 키를 다시 누르면 해제</div><div class="hotkey-mods" id="hkMods"></div><div class="hotkey-tabs"><button class="hk-tab" data-tab="select">선택</button><button class="hk-tab active" data-tab="capture">키 인식</button><button class="hk-tab" data-tab="manual">직접 입력</button></div><div id="hkTabBody"></div><div class="hotkey-status" id="hkStatus"></div></div><div class="dialog-foot"><button class="btn ghost" id="hkClear">해제</button><span class="push"></span><button class="btn" id="hkCancel">취소</button><button class="btn primary" id="hkApply">적용</button></div></section>`;document.body.append(o);
  const commonKeys=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9',...Array.from({length:24},(_,i)=>'F'+(i+1)),'Enter','Tab','Space','Esc','Up','Down','Left','Right','Home','End','PgUp','PgDn','Insert','Delete','NumLock','Numpad0','Numpad1','Numpad2','Numpad3','Numpad4','Numpad5','Numpad6','Numpad7','Numpad8','Numpad9','NumpadAdd','NumpadSub','NumpadMult','NumpadDiv','NumpadDot','NumpadEnter','AppsKey','Browser_Back','Browser_Favorites','Browser_Forward','Browser_Home','Browser_Refresh','Browser_Search','Browser_Stop','Launch_App1','Launch_App2','Launch_Mail','Launch_Media','Media_Next','Media_Play_Pause','Media_Prev','Media_Stop','ScrollLock','Sleep','Volume_Down','Volume_Mute','Volume_Up'].sort((a,b)=>keyDisplay15(a).localeCompare(keyDisplay15(b),'en',{numeric:true,sensitivity:'base'}));
  function drawMods(){const box=o.querySelector('#hkMods');box.innerHTML=[['ctrl','Ctrl'],['alt','Alt'],['shift','Shift'],['win','Win']].map(([k,l])=>`<div class="mod-card ${draft[k]?'active':''}" data-mod="${k}"><div class="mod-name">${l}${draft[k]==='L'?' L':draft[k]==='R'?' R':''}</div><div class="mod-sides"><button class="mod-side ${draft[k]==='A'?'on':''}" data-side="A">•</button><button class="mod-side ${draft[k]==='L'?'on':''}" data-side="L">L</button><button class="mod-side ${draft[k]==='R'?'on':''}" data-side="R">R</button></div></div>`).join('');$$('.mod-side',box).forEach(b=>b.onclick=()=>{const c=b.closest('.mod-card'),k=c.dataset.mod,s=b.dataset.side;draft[k]=draft[k]===s?'':s;draw();})}
- function drawNumLock(){let box=o.querySelector('#hkNumLock15');if(!triggerMode){box?.remove();return}if(!box){box=document.createElement('div');box.id='hkNumLock15';box.className='hk-numlock15';o.querySelector('#hkMods').insertAdjacentElement('afterend',box)}box.innerHTML=`<span><b>NumLock 조건</b><small>키 실행 조건</small></span><select class="select"><option value="" ${!draft.numLock?'selected':''}>상관없음</option><option value="on" ${draft.numLock==='on'?'selected':''}>NumLock ON</option><option value="off" ${draft.numLock==='off'?'selected':''}>NumLock OFF</option></select>`;box.querySelector('select').onchange=e=>{draft.numLock=e.target.value;draw()}}
+ function drawNumLock(){let box=o.querySelector('#hkNumLock15');if(!triggerMode){box?.remove();return}if(!box){box=document.createElement('div');box.id='hkNumLock15';box.className='hk-numlock15';o.querySelector('#hkMods').insertAdjacentElement('afterend',box)}const cur=normalizeNumLock15(draft.numLock);box.innerHTML=`<span><b>NumLock 조건</b><small>키 실행 조건</small></span><div class="hk-numlock-btns" role="radiogroup" aria-label="NumLock 조건"><button type="button" class="hk-nl-btn ${!cur?'active':''}" data-nl="" aria-pressed="${!cur}">상관없음</button><button type="button" class="hk-nl-btn ${cur==='on'?'active':''}" data-nl="on" aria-pressed="${cur==='on'}">ON</button><button type="button" class="hk-nl-btn ${cur==='off'?'active':''}" data-nl="off" aria-pressed="${cur==='off'}">OFF</button></div>`;$$('.hk-nl-btn',box).forEach(btn=>btn.onclick=()=>{draft.numLock=btn.dataset.nl||'';draw()})}
  function status(){const st=o.querySelector('#hkStatus'),conf=mode==='shortcut'?findHotkeyConflict(draft,exceptAutoId):null,modOnly=modifierOnlyInfo156(draft),modCount=['ctrl','alt','shift','win'].filter(k=>!!draft[k]).length;if(conf){st.className='hotkey-status bad';st.textContent=`충돌 · ${conf.g.name} / ${conf.a.name}`;o.querySelector('#hkApply').disabled=true}else if(mode==='key'&&!draft.key&&modCount>1){st.className='hotkey-status bad';st.textContent='보조키만 매핑할 때는 Ctrl / Alt / Shift / Win 중 하나만 선택하세요.';o.querySelector('#hkApply').disabled=true}else if(mode==='key'&&!draft.key&&!modOnly){st.className='hotkey-status';st.textContent='일반 키 또는 Ctrl / Alt / Shift / Win 하나를 선택하세요.';o.querySelector('#hkApply').disabled=true}else if(mode==='shortcut'&&!draft.key){st.className='hotkey-status';st.textContent='키를 선택하거나 단축키를 해제할 수 있습니다.';o.querySelector('#hkApply').disabled=false}else{st.className='hotkey-status ok';st.textContent=modOnly?'보조키 단독 매핑 가능':'사용 가능';o.querySelector('#hkApply').disabled=false}}
  function drawTab(){const b=o.querySelector('#hkTabBody');if(tab==='select'){b.innerHTML=`<select class="select" id="hkSelect"><option value="">키 선택</option>${commonKeys.map(k=>`<option value="${k}" ${draft.key===k?'selected':''}>${esc(keyDisplay15(k))}</option>`).join('')}</select><div class="hk-numpad-hint15">숫자패드와 볼륨·미디어·브라우저·앱 실행 기능키를 각각 구분합니다.</div>`;b.querySelector('#hkSelect').onchange=e=>{draft.key=e.target.value;draw()}}else if(tab==='capture'){b.innerHTML=`<button class="capture-box ${capturing?'active':''}" id="captureBox"><span><strong>${capturing?'키를 누르세요':'키 인식 시작'}</strong><br><small>${capturing?'좌·우 보조키와 숫자패드를 구분합니다. · Esc 취소':'클릭 후 실제 키 조합을 누르세요. 숫자패드 입력 시 NumLock 상태도 인식합니다.'}</small></span></button>`;b.querySelector('#captureBox').onclick=()=>startCapture()}else{b.innerHTML=`<input class="input" id="hkManual" placeholder="예: LCtrl + Numpad1 + NumLock ON" value="${esc(manualHotkeyText15(draft))}"><div style="font-size:9px;color:#98a2b3;margin-top:5px">Ctrl / LCtrl / RCtrl · Numpad0~9 · NumpadAdd/Sub/Mult/Div/Dot/Enter · NumLock ON/OFF</div>`;b.querySelector('#hkManual').oninput=e=>{draft=parseManualHotkey(e.target.value);drawMods();drawNumLock();o.querySelector('#hkCurrent').textContent=formatHotkey(draft);status()}}
  }
@@ -7013,6 +7013,46 @@ body .app .statusbar{
   color:var(--muted)!important;
 }
 .mod-side.on{background:var(--text)!important;color:var(--bg)!important}
+.hk-numlock15{
+  background:var(--panel2)!important;
+  border:1px solid var(--line)!important;
+  border-radius:10px!important;
+  padding:9px 11px!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+}
+.hk-numlock15 b{color:var(--text)!important;font-size:11.5px!important}
+.hk-numlock15 small{color:var(--muted)!important;font-size:10.5px!important}
+.hk-numlock-btns{
+  display:inline-grid;
+  grid-template-columns:repeat(3,minmax(56px,auto));
+  gap:3px;
+  padding:3px;
+  border-radius:9px;
+  background:var(--bg);
+  border:1px solid var(--line);
+}
+.hk-nl-btn{
+  height:28px;
+  padding:0 10px;
+  border:1px solid transparent;
+  border-radius:6px;
+  background:transparent;
+  color:var(--text2);
+  font-family:var(--sans);
+  font-size:11.5px;
+  font-weight:600;
+  white-space:nowrap;
+  transition:background .14s var(--ease),color .14s var(--ease),border-color .14s var(--ease);
+}
+.hk-nl-btn:hover:not(.active){
+  background:var(--elevated);
+  color:var(--text);
+}
+.hk-nl-btn.active{
+  background:var(--text);
+  color:var(--bg);
+  font-weight:700;
+}
 .capture-box{
   background:var(--bg)!important;
   border-color:var(--line-strong)!important;
