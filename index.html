@@ -4235,12 +4235,11 @@ W_CleanTitle(title) {
   /* Guide screen + nav */
   const rail=$('.rail'),spacer=$('.nav-spacer');
   if(rail&&spacer&&!$('#guideNavBtn')){const b=document.createElement('button');b.className='nav-btn';b.id='guideNavBtn';b.title='사용 안내';b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.4 2.4 0 0 1 4.6 1c0 1.8-2.4 2.1-2.4 4M12 17h.01"/></svg>';rail.insertBefore(b,spacer)}
-  const guide=document.createElement('section');guide.className='guide14';guide.id='guideLayout14';guide.hidden=true;guide.innerHTML=`<div class="guide14-inner"><div class="guide14-hero"><div class="guide14-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.4 2.4 0 0 1 4.6 1c0 1.8-2.4 2.1-2.4 4M12 17h.01"/></svg></div><div><h1>사용 안내</h1><p>easy-1HK 1.3에서 자주 쓰는 기능만 빠르게 확인합니다.</p></div></div><div class="guide14-grid">
-    <article class="guide14-card"><span class="no">01 · AUTOMATION</span><h2>자동화 만들기</h2><p>왼쪽에서 자동화를 만든 뒤 제목 아래 단축키 칩을 눌러 실행 키를 정합니다. 동작은 묶음·반복·APP 단계 안팎으로 드래그해서 옮길 수 있습니다.</p></article>
-    <article class="guide14-card"><span class="no">02 · EMERGENCY</span><h2>긴급 종료와 충돌검사</h2><p>상단 <b>실행 설정</b>에서 긴급 종료 키를 정합니다. 모든 단축키는 자동화·키매핑·클립보드·파일작업과 서로 검사되며 <b>Pause</b>는 보조 종료 키로 예약됩니다.</p><div class="guide14-warning">AHK 실행 중 문제가 생기면 설정한 긴급 종료 키 또는 Pause를 누르면 스크립트를 즉시 종료합니다.</div></article>
-    <article class="guide14-card wide"><span class="no">03 · MEASUREMENT</span><h2>측정기 AHK</h2><p>상단 <b>측정기</b>를 눌러 별도 AHK를 저장하고 실행합니다. 측정 결과는 동작 Inspector의 「클립보드 가져오기」로 바로 불러올 수 있습니다.</p><div class="guide14-keys"><div class="guide14-key"><kbd>Ctrl + Shift + F8</kbd><span>현재 창의 클릭 좌표 측정·기록</span></div><div class="guide14-key"><kbd>Ctrl + Shift + F9</kbd><span>전체 화면 좌표 복사</span></div><div class="guide14-key"><kbd>Ctrl + Shift + F10</kbd><span>프로그램 이름·창 제목·위치·크기 복사</span></div></div><div class="guide14-actions"><button class="btn" id="guideMeasure14">측정기 AHK 저장</button></div></article>
-    <article class="guide14-card"><span class="no">04 · WINDOW PRESET</span><h2>창 프리셋</h2><p>APP 단계·창 제어·창 대기 Inspector에서 Excel·이호조 같은 프리셋을 누르면 대상이 즉시 입력됩니다. 프리셋 자체는 상단 실행 설정에서 편집할 수 있습니다.</p></article>
-    <article class="guide14-card"><span class="no">05 · PROJECT</span><h2>프로젝트와 AHK</h2><p>편집 내용은 브라우저에 자동 저장됩니다. 상단 백업으로 JSON을 보관하고, AHK 버튼에서 현재 프로젝트의 충돌·필수값을 검사한 뒤 AutoHotkey v2 파일을 생성합니다. 생성된 스크립트를 실행하려면 Windows에 AutoHotkey v2가 설치되어 있어야 합니다.</p><div class="guide14-actions" style="margin-top:12px"><a class="btn primary" href="https://www.autohotkey.com" target="_blank" rel="noopener noreferrer" style="text-decoration:none">AutoHotkey v2 다운로드 (www.autohotkey.com) ↗</a></div></article>
+  const guide=document.createElement('section');guide.className='guide14';guide.id='guideLayout14';guide.hidden=true;guide.innerHTML=`<div class="guide14-inner"><div class="guide14-hero"><div class="guide14-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.4 2.4 0 0 1 4.6 1c0 1.8-2.4 2.1-2.4 4M12 17h.01"/></svg></div><div><h1>사용 안내</h1><p>yzy-1HK 1.7.7에서 자주 쓰는 핵심 기능과 단축키를 빠르게 확인합니다.</p></div></div><div class="guide14-grid">
+    <article class="guide14-card"><span class="no">01 · EMERGENCY</span><h2>긴급 종료와 충돌검사</h2><p>상단 <b>실행 설정</b>에서 긴급 종료 키를 정합니다. 모든 단축키는 자동화·키매핑·클립보드·파일작업과 서로 검사되며 <b>Pause</b>는 보조 종료 키로 예약됩니다.</p><div class="guide14-warning">AHK 실행 중 문제가 생기면 설정한 긴급 종료 키 또는 Pause를 누르면 스크립트를 즉시 종료합니다.</div></article>
+    <article class="guide14-card"><span class="no">02 · MEASUREMENT</span><h2>측정기 AHK</h2><p>상단 <b>측정기</b>를 눌러 별도 AHK를 저장하고 실행합니다. 측정 결과는 동작 Inspector의 「클립보드 가져오기」로 바로 불러올 수 있습니다.</p><div class="guide14-keys"><div class="guide14-key"><kbd>Ctrl+Shift+F8</kbd><span>현재 창 클릭 좌표 측정</span></div><div class="guide14-key"><kbd>Ctrl+Shift+F9</kbd><span>전체 화면 좌표 복사</span></div><div class="guide14-key"><kbd>Ctrl+Shift+F10</kbd><span>창 이름·위치·크기 복사</span></div></div><div class="guide14-actions" style="margin-top:12px"><button class="btn" id="guideMeasure14">측정기 AHK 저장</button></div></article>
+    <article class="guide14-card"><span class="no">03 · WINDOW PRESET</span><h2>창 프리셋</h2><p>APP 단계·창 제어·창 대기 Inspector에서 Excel·이호조 같은 프리셋을 누르면 대상이 즉시 입력됩니다. 프리셋 자체는 상단 <b>실행 설정</b>에서 자유롭게 편집할 수 있습니다.</p></article>
+    <article class="guide14-card"><span class="no">04 · PROJECT & AHK</span><h2>프로젝트와 AHK</h2><p>편집 내용은 브라우저에 자동 저장됩니다. 상단 <b>백업</b>으로 JSON을 보관하고, <b>AHK</b> 버튼에서 충돌·필수값을 검사한 뒤 AutoHotkey v2 파일을 생성합니다.</p><div class="guide14-actions" style="margin-top:12px"><a class="btn primary" href="https://www.autohotkey.com" target="_blank" rel="noopener noreferrer" style="text-decoration:none">AutoHotkey v2 다운로드 (www.autohotkey.com) ↗</a></div></article>
   </div></div>`;$('.main').append(guide);guide.querySelector('#guideMeasure14').onclick=downloadHelper14;
   function hideGuide14(){guide.hidden=true;document.body.classList.remove('guide14-view')}
   function hideAllPrimary14(){['automationLayout','collectionsLayout','modulePlaceholder','clipboardLayout','replaceLayout','keymapLayout','filesLayout'].forEach(id=>{const e=$('#'+id);if(e)e.hidden=true});hideGuide14()}
@@ -5773,6 +5772,11 @@ body .app .main{
 .keymap-layout,
 .files-layout,
 .clipboard-layout.clip13{
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  height:100%!important;
+  grid-template-columns:var(--library) minmax(0,1fr)!important;
   gap:14px!important;
   background:transparent!important;
   border:0!important;
@@ -5780,6 +5784,7 @@ body .app .main{
   box-shadow:none!important;
   overflow:visible!important;
 }
+.automation-layout.focus{grid-template-columns:minmax(0,1fr)!important}
 
 /* Floating Left Master Sidebar Cards */
 .library,
@@ -5812,8 +5817,8 @@ body .app .main{
   overflow:hidden!important;
   position:relative!important;
 }
-.clip13-main{overflow:auto!important}
-.guide14{position:absolute!important;inset:14px 16px!important;overflow:auto!important}
+.clip13-main,.replace-main,.keymap-main,.files-main{overflow:auto!important}
+.guide14{position:absolute!important;inset:14px 16px!important;overflow:auto!important;padding:0!important}
 .canvas,
 .collection-canvas{
   background:transparent!important;
@@ -5824,7 +5829,8 @@ body .app .main{
 .keymap-main::before,
 .files-main::before,
 .clip13-main::before,
-.clipboard-layout:not(.clip13)::before{
+.clipboard-layout:not(.clip13)::before,
+.guide14::before{
   content:"";
   position:absolute;
   inset:0;
@@ -5838,15 +5844,36 @@ body .app .main{
 .files-main-inner,
 .clip13-main-inner,
 .clipboard-inner,
-.collection-canvas-inner{
+.collection-canvas-inner,
+.guide14-inner{
   position:relative;
   z-index:1;
-}
-.canvas-inner{
-  max-width:1040px!important;
+  width:100%!important;
+  max-width:980px!important;
+  margin:0 auto!important;
   padding:32px 36px 80px!important;
 }
-.canvas-head{margin-bottom:22px!important}
+.canvas-head,.replace-head,.keymap-head,.files-head,.clip13-head{
+  margin-bottom:22px!important;
+  align-items:flex-start!important;
+}
+input[type="checkbox"],input[type="radio"]{accent-color:var(--accent)}
+.guide14-grid{gap:14px!important}
+.guide14-card{
+  display:flex!important;
+  flex-direction:column!important;
+  padding:20px 22px!important;
+}
+.guide14-card .no{margin-bottom:4px}
+.guide14-card h2{font-size:15px!important;margin:4px 0 8px!important}
+.guide14-card p{font-size:12.5px!important;line-height:1.65!important}
+.guide14-key{
+  grid-template-columns:auto minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:7px 10px!important;
+}
+.guide14-actions{margin-top:auto!important;padding-top:14px}
 
 /* Editorial Monospace Kicker above Automation Title */
 .canvas-title::before{
@@ -7065,6 +7092,7 @@ html[data-theme="dark"] .group-head[data-accent-color]{
   body .app .rail{padding:0 10px!important;gap:2px!important}
   body .app .rail > .nav-btn{padding:0 10px!important;font-size:12px!important}
   body .app .main{padding:8px!important}
+  .automation-layout,.collections-layout,.replace-layout,.keymap-layout,.files-layout,.clipboard-layout.clip13{grid-template-columns:1fr!important}
   .buildbar{flex-wrap:wrap!important}
   .library,
   .replace-sidebar,
