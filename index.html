@@ -4146,10 +4146,20 @@ W_CleanTitle(title) {
 (()=>{
   const V='0.14', EMPTY14=()=>({ctrl:'',alt:'',shift:'',win:'',key:''});
   const DEFAULT_STOP={ctrl:'A',alt:'A',shift:'',win:'',key:'F4'};
+  const WIN_HOTKEY_DEFS14=[
+    {id:'remember',label:'창기억',desc:'현재 활성 창을 기억해 둡니다.'},
+    {id:'recall',label:'창리콜',desc:'기억해 둔 창을 맨 앞으로 활성화합니다.'},
+    {id:'pinTop',label:'창고정',desc:'현재 활성 창의 항상 위(AlwaysOnTop)를 토글합니다.'},
+    {id:'desktopHop',label:'창월담',desc:'다음 가상 데스크톱으로 순환 이동합니다 (끝→1).'}
+  ];
   function ensure14(){
     state.runtimeSettings=state.runtimeSettings||{};
     if(!state.runtimeSettings.stopHotkey?.key)state.runtimeSettings.stopHotkey=clone(DEFAULT_STOP);
     if(!state.runtimeSettings.addActionHotkey||typeof state.runtimeSettings.addActionHotkey!=='object')state.runtimeSettings.addActionHotkey={ctrl:'',alt:'',shift:'',win:'',key:''};
+    if(!state.runtimeSettings.winHotkeys||typeof state.runtimeSettings.winHotkeys!=='object')state.runtimeSettings.winHotkeys={};
+    for(const d of WIN_HOTKEY_DEFS14){
+      if(!state.runtimeSettings.winHotkeys[d.id]||typeof state.runtimeSettings.winHotkeys[d.id]!=='object')state.runtimeSettings.winHotkeys[d.id]=EMPTY14();
+    }
     if(!Number.isFinite(Number(state.runtimeSettings.defaultActionDelayMs)))state.runtimeSettings.defaultActionDelayMs=100;
     state.runtimeSettings.defaultActionDelayMs=Math.max(0,Math.min(60000,Math.round(Number(state.runtimeSettings.defaultActionDelayMs)||0)));
     state.windowPresets=Array.isArray(state.windowPresets)?state.windowPresets:[];
@@ -4195,6 +4205,10 @@ W_CleanTitle(title) {
     if(!h?.key&&!modifierOnlyInfo156(h))return null;
     if(except!=='__stop__'&&hotkeysConflict15(state.runtimeSettings.stopHotkey,h))return{id:'__stop__',section:'실행 설정',name:'긴급 종료 키'};
     if(except!=='__addAction__'&&hotkeysConflict15(state.runtimeSettings.addActionHotkey,h))return{id:'__addAction__',section:'실행 설정',name:'동작 추가 단축키'};
+    for(const d of WIN_HOTKEY_DEFS14){
+      const eid=`__win_${d.id}__`;
+      if(except!==eid&&hotkeysConflict15(state.runtimeSettings.winHotkeys?.[d.id],h))return{id:eid,section:'실행 설정',name:`창 유틸 · ${d.label}`};
+    }
     if(isBarePause14(h)&&except!=='__pause__')return{id:'__pause__',section:'실행 설정',name:'보조 긴급 종료 키 Pause'};
     return hotkeyEntries14('all').find(x=>x.id!==except&&hotkeysConflict15(x.h,h))||null;
   }
@@ -4206,12 +4220,32 @@ W_CleanTitle(title) {
     const o=document.createElement('div');o.className='overlay runtime-overlay14';o.innerHTML=`<section class="dialog runtime-dialog"><div class="dialog-head"><strong>실행 설정</strong><button class="dialog-close">${ICONS.close}</button></div><div class="dialog-body" id="runtimeBody14"></div><div class="dialog-foot"><button class="btn" id="runtimeStopTest14">종료키 시험 AHK</button><button class="btn" id="runtimeMeasure14">측정기 AHK</button><span class="push"></span><button class="btn primary" id="runtimeDone14">완료</button></div></section>`;document.body.append(o);
     const draw=()=>{
       const cf=stopConflict14(),addCf=conflictEntry14(state.runtimeSettings.addActionHotkey,'__addAction__');
+      const winCardsHtml=WIN_HOTKEY_DEFS14.map(d=>{
+        const hk=state.runtimeSettings.winHotkeys?.[d.id]||EMPTY14();
+        const wcf=conflictEntry14(hk,`__win_${d.id}__`);
+        const hasKey=Boolean(hk?.key||modifierOnlyInfo156(hk));
+        return `<div class="preset-row" style="grid-template-columns:92px minmax(0,1fr) auto auto;gap:8px;align-items:center" data-winhk-row="${d.id}">
+          <strong style="font-size:12px;color:var(--text)">${esc(d.label)}</strong>
+          <div style="min-width:0"><div style="font-size:11px;color:${wcf?'var(--bad,#ff5d5d)':'var(--muted)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${wcf?`충돌 · ${esc(wcf.section)} / ${esc(wcf.name)}`:esc(d.desc)}</div></div>
+          <button type="button" class="runtime-hotkey" style="width:auto;min-width:136px;margin:0;padding:6px 10px" data-winhk-pick="${d.id}">${ICONS.keyboard}<span>${esc(hasKey?formatHotkey(hk):'미지정')}</span><small>변경</small></button>
+          <button type="button" class="btn" style="padding:6px 9px;min-height:0" data-winhk-clear="${d.id}" ${hasKey?'':'disabled'} title="단축키 해제">해제</button>
+        </div>`;
+      }).join('');
       o.querySelector('#runtimeBody14').innerHTML=`
         <section class="runtime-card"><div class="runtime-card-head"><div><strong>긴급 종료 키</strong><p>생성되는 모든 easy-1HK AHK에 공통으로 들어갑니다.</p></div></div><button class="runtime-hotkey" id="stopHotkey14">${ICONS.keyboard}<span>${esc(formatHotkey(state.runtimeSettings.stopHotkey))}</span><small>변경</small></button><div class="runtime-note ${cf?'bad':''}">${cf?`충돌 · ${esc(cf.section)} / ${esc(cf.name)}`:'추가 보조 종료 키로 Pause가 항상 예약됩니다. 일반 자동화·키매핑·클립보드·파일작업과 전역 충돌검사를 합니다.'}</div></section>
+        <section class="runtime-card"><div class="runtime-card-head"><div><strong>창 유틸리티 단축키</strong><p>창기억 · 창리콜 · 창고정 · 창월담 전역 단축키를 설정합니다. (지정한 항목만 AHK에 포함)</p></div></div><div class="preset-list" style="gap:8px">${winCardsHtml}</div><div class="runtime-note">창월담은 현재 가상 데스크톱을 순환 이동합니다 (1 → 2 → 3 → 1). 전역 충돌검사에 포함됩니다.</div></section>
         <section class="runtime-card"><div class="runtime-card-head"><div><strong>동작 추가 단축키</strong><p>자동화 편집 화면에서 「동작 추가」 창을 바로 엽니다.</p></div></div><button class="runtime-hotkey" id="addActionHotkey147">${ICONS.keyboard}<span>${esc(formatHotkey(state.runtimeSettings.addActionHotkey))}</span><small>변경</small></button><div class="runtime-note ${addCf?'bad':''}">${addCf?`충돌 · ${esc(addCf.section)} / ${esc(addCf.name)}`:'미지정으로 둘 수도 있습니다. 편집기에서만 작동하며 생성 AHK에는 포함되지 않습니다.'}</div></section>
         <section class="runtime-card"><div class="runtime-card-head"><div><strong>동작 후 기본 대기</strong><p>새로 추가하는 동작의 「동작 후 대기」 기본값입니다. 기존 동작의 값은 바뀌지 않습니다.</p></div></div><div class="runtime-delay145"><input id="defaultActionDelay14" type="number" min="0" max="60000" step="10" value="${state.runtimeSettings.defaultActionDelayMs}"><span>ms</span></div><div class="runtime-note">0이면 바로 다음 동작으로 넘어갑니다. 일반적인 자동화는 50~300ms 정도가 안정적입니다.</div></section>
         <section class="runtime-card"><div class="runtime-card-head"><div><strong>창 프리셋</strong><p>APP 단계·창 제어·창 대기에서 한 번에 대상 정보를 채웁니다.</p></div></div><div class="preset-list">${state.windowPresets.map(p=>`<div class="preset-row" data-preset-row="${p.id}"><input value="${esc(p.name)}" data-pname><select data-ptype><option value="exe" ${p.targetMode==='exe'?'selected':''}>APP / EXE</option><option value="title" ${p.targetMode==='title'?'selected':''}>창 제목</option></select><input value="${esc(p.target)}" data-ptarget><button data-pdel title="삭제">${ICONS.trash}</button></div>`).join('')}</div><div class="preset-add"><input id="newPresetName14" placeholder="이름"><select id="newPresetType14"><option value="exe">APP / EXE</option><option value="title">창 제목</option></select><input id="newPresetTarget14" placeholder="EXCEL.EXE / 창 제목"><button id="addPreset14">추가</button></div></section>`;
       o.querySelector('#stopHotkey14').onclick=()=>openHotkeyEditor({title:'긴급 종료 키',value:state.runtimeSettings.stopHotkey,exceptAutoId:'__stop__',onApply:v=>{if(!v?.key){toast('긴급 종료 키는 해제할 수 없습니다.','warn');return}commit(()=>state.runtimeSettings.stopHotkey=v,{render:false});draw()}});
+      o.querySelectorAll('[data-winhk-pick]').forEach(btn=>{
+        const id=btn.dataset.winhkPick,def=WIN_HOTKEY_DEFS14.find(x=>x.id===id);
+        btn.onclick=()=>openHotkeyEditor({title:`창 유틸리티 · ${def?.label||id}`,value:state.runtimeSettings.winHotkeys[id]||EMPTY14(),exceptAutoId:`__win_${id}__`,onApply:v=>{commit(()=>{state.runtimeSettings.winHotkeys[id]=v||EMPTY14()},{render:false});draw()}});
+      });
+      o.querySelectorAll('[data-winhk-clear]').forEach(btn=>{
+        const id=btn.dataset.winhkClear;
+        btn.onclick=()=>{commit(()=>{state.runtimeSettings.winHotkeys[id]=EMPTY14()},{render:false});draw()};
+      });
       o.querySelector('#addActionHotkey147').onclick=()=>openHotkeyEditor({title:'동작 추가 단축키',value:state.runtimeSettings.addActionHotkey,exceptAutoId:'__addAction__',onApply:v=>{commit(()=>state.runtimeSettings.addActionHotkey=v||{ctrl:'',alt:'',shift:'',win:'',key:''},{render:false});draw()}});
       const delayInput=o.querySelector('#defaultActionDelay14');
       delayInput.oninput=()=>{const v=Math.max(0,Math.min(60000,Math.round(Number(delayInput.value)||0)));state.runtimeSettings.defaultActionDelayMs=v;markSaving()};
@@ -4287,15 +4321,44 @@ W_CleanTitle(title) {
   /* AHK v2 builder extension: emergency stop + global collision + Client/Screen coordinate mode */
   const api=window.easy1HK13||{},baseBuild=api.buildAHK,baseIssues=api.generationIssues;
   function coordModes14(scope){const q=[];const walk=nodes=>{for(const n of nodes||[]){if(['click','dblclick','move'].includes(n.type))q.push(n.coordMode||'Client');if(isContainer14(n))walk(n.children||[])}};if(scope==='current'){const a=currentAuto();if(a&&a.enabled!==false&&a.shortcut?.key)walk(a.nodes)}else for(const g of state.groups||[])for(const a of g.automations||[])if(a.enabled!==false&&a.shortcut?.key)walk(a.nodes);return q}
+  function winToolsAHK14(){
+    const defs=[
+      {id:'remember',fn:'E1_WinRemember'},
+      {id:'recall',fn:'E1_WinRecall'},
+      {id:'pinTop',fn:'E1_WinPinTop'},
+      {id:'desktopHop',fn:'E1_DesktopHop'}
+    ];
+    const bindings=[];
+    for(const d of defs){
+      const hk=state.runtimeSettings.winHotkeys?.[d.id];
+      if(!hk?.key&&!modifierOnlyInfo156(hk))continue;
+      const lbl=api.hotkeyLabel(hk);
+      if(!lbl)continue;
+      const cond=api.hotIfExpr?.(hk)||'';
+      bindings.push(`${cond?'#HotIf '+cond+'\r\n':''}${lbl}::${d.fn}()\r\n${cond?'#HotIf\r\n':''}`);
+    }
+    if(!bindings.length)return '';
+    return `\r\n; ===== window tools =====\r\nglobal E1_RememberedHwnd := 0\r\n${bindings.join('')}\r\nE1_WinNotice(msg) {\r\n  ToolTip(msg)\r\n  SetTimer(() => ToolTip(), -1300)\r\n}\r\n\r\nE1_WinRemember() {\r\n  global E1_RememberedHwnd\r\n  hwnd := WinExist("A")\r\n  if !hwnd {\r\n    E1_WinNotice("활성 창을 찾지 못했습니다.")\r\n    return\r\n  }\r\n  E1_RememberedHwnd := hwnd\r\n  title := ""\r\n  try title := WinGetTitle("ahk_id " hwnd)\r\n  E1_WinNotice("창 기억: " (title != "" ? SubStr(title, 1, 40) : "HWND " hwnd))\r\n}\r\n\r\nE1_WinRecall() {\r\n  global E1_RememberedHwnd\r\n  if !E1_RememberedHwnd || !WinExist("ahk_id " E1_RememberedHwnd) {\r\n    E1_WinNotice("기억된 창이 없습니다.")\r\n    return\r\n  }\r\n  try {\r\n    if (WinGetMinMax("ahk_id " E1_RememberedHwnd) = -1)\r\n      WinRestore("ahk_id " E1_RememberedHwnd)\r\n    WinActivate("ahk_id " E1_RememberedHwnd)\r\n  }\r\n}\r\n\r\nE1_WinPinTop() {\r\n  hwnd := WinExist("A")\r\n  if !hwnd\r\n    return\r\n  WinSetAlwaysOnTop(-1, "ahk_id " hwnd)\r\n  isTop := (WinGetExStyle("ahk_id " hwnd) & 0x8) != 0\r\n  E1_WinNotice(isTop ? "창 고정 ON (항상 위)" : "창 고정 OFF")\r\n}\r\n\r\nE1_DesktopHop() {\r\n  baseKey := "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops"\r\n  ids := ""\r\n  cur := ""\r\n  try ids := RegRead(baseKey, "VirtualDesktopIDs")\r\n  try cur := RegRead(baseKey, "CurrentVirtualDesktop")\r\n  if (cur = "") {\r\n    sid := 0\r\n    DllCall("ProcessIdToSessionId", "UInt", DllCall("GetCurrentProcessId", "UInt"), "UInt*", &sid)\r\n    if (sid > 0)\r\n      try cur := RegRead("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\" sid "\\VirtualDesktops", "CurrentVirtualDesktop")\r\n  }\r\n  count := StrLen(ids) // 32\r\n  if (count <= 1 || StrLen(cur) < 32) {\r\n    Send("#^{Right}")\r\n    return\r\n  }\r\n  idx := 0\r\n  Loop count {\r\n    if (SubStr(ids, (A_Index - 1) * 32 + 1, 32) = cur) {\r\n      idx := A_Index\r\n      break\r\n    }\r\n  }\r\n  if (idx > 0 && idx < count) {\r\n    Send("#^{Right}")\r\n  } else if (idx >= count) {\r\n    Loop (count - 1) {\r\n      Send("#^{Left}")\r\n      Sleep(35)\r\n    }\r\n  } else {\r\n    Send("#^{Right}")\r\n  }\r\n}\r\n; ===== window tools end =====\r\n`;
+  }
   function buildAHK14(scope='all'){
     ensure14();let code=baseBuild(scope);const modes=coordModes14(scope);let mi=0;code=code.replace(/CoordMode "Mouse", "Client"/g,()=>`CoordMode "Mouse", "${modes[mi++]||'Client'}"`);
-    const stop=api.hotkeyLabel(state.runtimeSettings.stopHotkey),stopCond=api.hotIfExpr?.(state.runtimeSettings.stopHotkey)||'';const block=`\r\n; ===== emergency stop =====\r\n${stopCond?'#HotIf '+stopCond+'\r\n':''}${stop}::ExitApp()\r\n${stopCond?'#HotIf\r\n':''}Pause::ExitApp()\r\n; ===== emergency stop end =====\r\n`;
+    const stop=api.hotkeyLabel(state.runtimeSettings.stopHotkey),stopCond=api.hotIfExpr?.(state.runtimeSettings.stopHotkey)||'';const block=`\r\n; ===== emergency stop =====\r\n${stopCond?'#HotIf '+stopCond+'\r\n':''}${stop}::ExitApp()\r\n${stopCond?'#HotIf\r\n':''}Pause::ExitApp()\r\n; ===== emergency stop end =====\r\n`+winToolsAHK14();
     code=code.replace(/(SetWorkingDir A_ScriptDir\r?\n)/,`$1${block}`);return code;
   }
   function issues14(scope='all'){
     const issues=baseIssues(scope).slice(),stop=state.runtimeSettings.stopHotkey;if(!stop?.key)issues.push({level:'error',where:'실행 설정',msg:'긴급 종료 키가 없습니다.'});
     if(isBarePause14(stop))issues.push({level:'error',where:'실행 설정',msg:'Pause는 보조 긴급 종료 키로 이미 예약되어 있습니다.'});
-    for(const e of hotkeyEntries14(scope)){if(hotkeysConflict15(e.h,stop))issues.push({level:'error',where:`${e.section} · ${e.name}`,msg:'긴급 종료 키와 겹칩니다.'});if(isBarePause14(e.h))issues.push({level:'error',where:`${e.section} · ${e.name}`,msg:'Pause는 보조 긴급 종료 키로 예약되어 있습니다.'})}
+    const entries=hotkeyEntries14(scope);
+    for(const e of entries){if(hotkeysConflict15(e.h,stop))issues.push({level:'error',where:`${e.section} · ${e.name}`,msg:'긴급 종료 키와 겹칩니다.'});if(isBarePause14(e.h))issues.push({level:'error',where:`${e.section} · ${e.name}`,msg:'Pause는 보조 긴급 종료 키로 예약되어 있습니다.'})}
+    for(let i=0;i<WIN_HOTKEY_DEFS14.length;i++){
+      const d=WIN_HOTKEY_DEFS14[i],h=state.runtimeSettings.winHotkeys?.[d.id];
+      if(!h?.key&&!modifierOnlyInfo156(h))continue;
+      const where=`실행 설정 · 창 유틸(${d.label})`;
+      if(hotkeysConflict15(h,stop))issues.push({level:'error',where,msg:'긴급 종료 키와 겹칩니다.'});
+      if(isBarePause14(h))issues.push({level:'error',where,msg:'Pause는 보조 긴급 종료 키로 예약되어 있습니다.'});
+      for(const e of entries)if(hotkeysConflict15(e.h,h))issues.push({level:'error',where,msg:`${e.section} · ${e.name} 단축키와 겹칩니다.`});
+      for(let j=i+1;j<WIN_HOTKEY_DEFS14.length;j++){const d2=WIN_HOTKEY_DEFS14[j],h2=state.runtimeSettings.winHotkeys?.[d2.id];if((h2?.key||modifierOnlyInfo156(h2))&&hotkeysConflict15(h,h2))issues.push({level:'error',where,msg:`${d2.label} 단축키와 겹칩니다.`})}
+    }
     return issues;
   }
   function fileName14(scope){const base=scope==='current'?(currentAuto()?.name||'automation'):'easy-1HK_1.7.7';return String(base).replace(/[\\/:*?"<>|]+/g,'_').trim()+'.ahk'}
