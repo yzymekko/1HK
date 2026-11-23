@@ -392,6 +392,7 @@ function E1_applyDefaultDelay145(node){
     <button class="rail-logo" id="railHome" title="자동화"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 6V5a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3v14a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3z"/></svg></button>
     <button class="nav-btn active" id="automationNavBtn" title="자동화"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m8 5 11 7-11 7z"/></svg></button>
     <button class="nav-btn" id="clipboardNavBtn" title="클립보드"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V2h6v2M9 8h6"/></svg></button>
+    <button class="nav-btn" id="winUtilNavBtn" title="창 유틸리티"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 14h8"/></svg></button>
     <button class="nav-btn" id="replaceNavBtn" title="자동변환"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 2l4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4m14-1v2a3 3 0 0 1-3 3H3"/></svg></button>
     <button class="nav-btn" id="keymapNavBtn" title="키매핑"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M19 10h.01M8 14h8"/></svg></button>
     <button class="nav-btn" id="filesNavBtn" title="파일작업"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h6l2 2h10v11H3z"/></svg></button>
@@ -591,6 +592,8 @@ function E1_applyDefaultDelay145(node){
     </section>
 
 
+
+    <section class="clipboard-layout clip13" id="winUtilLayout" hidden aria-live="polite"></section>
 
     <section class="files-layout" id="filesLayout" hidden aria-live="polite">
       <aside class="files-sidebar" id="filesSidebar">
@@ -3551,7 +3554,7 @@ body.replace-view .replace-layout,body.keymap-view .keymap-layout,body.clipboard
 
   /* Replace nav nodes so historical capture handlers cannot steal these menus. */
   function resetNav13(id,title,handler){const old=$('#'+id);if(!old)return;const n=old.cloneNode(true);n.title=title;old.replaceWith(n);n.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();handler()})}
-  function hideAll13(){for(const id of ['automationLayout','collectionsLayout','clipboardLayout','replaceLayout','keymapLayout','filesLayout','modulePlaceholder']){const el=$('#'+id);if(el)el.hidden=true}document.body.classList.remove('module-view','collection-view','clipboard-view','replace-view','keymap-view','files-view');$$('.nav-btn').forEach(b=>b.classList.remove('active'));closeInspector()}
+  function hideAll13(){for(const id of ['automationLayout','collectionsLayout','clipboardLayout','winUtilLayout','replaceLayout','keymapLayout','filesLayout','modulePlaceholder']){const el=$('#'+id);if(el)el.hidden=true}document.body.classList.remove('module-view','collection-view','clipboard-view','winutil-view','replace-view','keymap-view','files-view');$$('.nav-btn').forEach(b=>b.classList.remove('active'));closeInspector()}
   function status13(nav,group,auto,nodes){$('#'+nav)?.classList.add('active');$('#crumbGroup').textContent=group;$('#crumbAuto').textContent=auto||'';$('#statusGroup').textContent=group;$('#statusAuto').textContent=auto||'';$('#statusNodes').textContent=nodes||''}
 
   /* ---------- TEXT REPLACEMENT ---------- */
@@ -4147,8 +4150,6 @@ W_CleanTitle(title) {
   const V='0.14', EMPTY14=()=>({ctrl:'',alt:'',shift:'',win:'',key:''});
   const DEFAULT_STOP={ctrl:'A',alt:'A',shift:'',win:'',key:'F4'};
   const WIN_HOTKEY_DEFS14=[
-    {id:'remember',label:'창기억',desc:'현재 활성 창을 기억해 둡니다.'},
-    {id:'recall',label:'창리콜',desc:'기억해 둔 창을 맨 앞으로 활성화합니다.'},
     {id:'pinTop',label:'창고정',desc:'현재 활성 창의 항상 위(AlwaysOnTop)를 토글합니다.'},
     {id:'desktopHop',label:'창월담',desc:'다음 가상 데스크톱으로 순환 이동합니다 (끝→1).'}
   ];
@@ -4159,6 +4160,18 @@ W_CleanTitle(title) {
     if(!state.runtimeSettings.winHotkeys||typeof state.runtimeSettings.winHotkeys!=='object')state.runtimeSettings.winHotkeys={};
     for(const d of WIN_HOTKEY_DEFS14){
       if(!state.runtimeSettings.winHotkeys[d.id]||typeof state.runtimeSettings.winHotkeys[d.id]!=='object')state.runtimeSettings.winHotkeys[d.id]=EMPTY14();
+    }
+    state.windowSlots=Array.isArray(state.windowSlots)?state.windowSlots:[];
+    if(!state.windowSlots.length){
+      state.windowSlots=[{id:uid('wslot'),name:'창 슬롯 1',memo:'',enabled:true,remember:EMPTY14(),recall:EMPTY14()}];
+    }
+    for(const ws of state.windowSlots){
+      if(!ws.id)ws.id=uid('wslot');
+      if(typeof ws.name!=='string')ws.name='창 슬롯';
+      if(typeof ws.memo!=='string')ws.memo='';
+      if(typeof ws.enabled!=='boolean')ws.enabled=true;
+      if(!ws.remember||typeof ws.remember!=='object')ws.remember=EMPTY14();
+      if(!ws.recall||typeof ws.recall!=='object')ws.recall=EMPTY14();
     }
     if(!Number.isFinite(Number(state.runtimeSettings.defaultActionDelayMs)))state.runtimeSettings.defaultActionDelayMs=100;
     state.runtimeSettings.defaultActionDelayMs=Math.max(0,Math.min(60000,Math.round(Number(state.runtimeSettings.defaultActionDelayMs)||0)));
@@ -4197,6 +4210,7 @@ W_CleanTitle(title) {
     for(const g of state.groups||[])for(const a of g.automations||[])if(a.enabled!==false)add(a.id,'자동화',`${g.name} / ${a.name}`,a.shortcut);
     for(const g of state.keymapGroups||[])if(g.enabled!==false)for(const r of g.rules||[])if(r.enabled!==false)add(r.id,'키매핑',`${g.name} / ${r.name||formatHotkey(r.input)}`,r.input);
     for(const g of state.clipboardGroups||[])for(const sl of g.slots||[])if(sl.enabled!==false){add(sl.id+':copy','클립보드 슬롯',`${sl.name} · 복사`,sl.copy);add(sl.id+':paste','클립보드 슬롯',`${sl.name} · 붙여넣기`,sl.paste)}
+    for(const ws of state.windowSlots||[])if(ws.enabled!==false){add(ws.id+':remember','창 유틸리티',`${ws.name||'창 슬롯'} · 창기억`,ws.remember);add(ws.id+':recall','창 유틸리티',`${ws.name||'창 슬롯'} · 창리콜`,ws.recall)}
     for(const j of state.fileJobs||[])if(j.enabled!==false)add(j.id,'파일작업',j.name||'파일작업',j.shortcut);
     return out;
   }
@@ -4233,7 +4247,7 @@ W_CleanTitle(title) {
       }).join('');
       o.querySelector('#runtimeBody14').innerHTML=`
         <section class="runtime-card"><div class="runtime-card-head"><div><strong>긴급 종료 키</strong><p>생성되는 모든 easy-1HK AHK에 공통으로 들어갑니다.</p></div></div><button class="runtime-hotkey" id="stopHotkey14">${ICONS.keyboard}<span>${esc(formatHotkey(state.runtimeSettings.stopHotkey))}</span><small>변경</small></button><div class="runtime-note ${cf?'bad':''}">${cf?`충돌 · ${esc(cf.section)} / ${esc(cf.name)}`:'추가 보조 종료 키로 Pause가 항상 예약됩니다. 일반 자동화·키매핑·클립보드·파일작업과 전역 충돌검사를 합니다.'}</div></section>
-        <section class="runtime-card"><div class="runtime-card-head"><div><strong>창 유틸리티 단축키</strong><p>창기억 · 창리콜 · 창고정 · 창월담 전역 단축키를 설정합니다. (지정한 항목만 AHK에 포함)</p></div></div><div class="preset-list" style="gap:8px">${winCardsHtml}</div><div class="runtime-note">창월담은 현재 가상 데스크톱을 순환 이동합니다 (1 → 2 → 3 → 1). 전역 충돌검사에 포함됩니다.</div></section>
+        <section class="runtime-card"><div class="runtime-card-head"><div><strong>창 유틸리티 단축키</strong><p>창고정 · 창월담 전역 단축키를 설정합니다. (창기억 → 창리콜은 좌측 「창 유틸리티」 메뉴에서 관리)</p></div></div><div class="preset-list" style="gap:8px">${winCardsHtml}</div><div class="runtime-note">창월담은 현재 가상 데스크톱을 순환 이동합니다 (1 → 2 → 3 → 1). 전역 충돌검사에 포함됩니다.</div></section>
         <section class="runtime-card"><div class="runtime-card-head"><div><strong>동작 추가 단축키</strong><p>자동화 편집 화면에서 「동작 추가」 창을 바로 엽니다.</p></div></div><button class="runtime-hotkey" id="addActionHotkey147">${ICONS.keyboard}<span>${esc(formatHotkey(state.runtimeSettings.addActionHotkey))}</span><small>변경</small></button><div class="runtime-note ${addCf?'bad':''}">${addCf?`충돌 · ${esc(addCf.section)} / ${esc(addCf.name)}`:'미지정으로 둘 수도 있습니다. 편집기에서만 작동하며 생성 AHK에는 포함되지 않습니다.'}</div></section>
         <section class="runtime-card"><div class="runtime-card-head"><div><strong>동작 후 기본 대기</strong><p>새로 추가하는 동작의 「동작 후 대기」 기본값입니다. 기존 동작의 값은 바뀌지 않습니다.</p></div></div><div class="runtime-delay145"><input id="defaultActionDelay14" type="number" min="0" max="60000" step="10" value="${state.runtimeSettings.defaultActionDelayMs}"><span>ms</span></div><div class="runtime-note">0이면 바로 다음 동작으로 넘어갑니다. 일반적인 자동화는 50~300ms 정도가 안정적입니다.</div></section>
         <section class="runtime-card"><div class="runtime-card-head"><div><strong>창 프리셋</strong><p>APP 단계·창 제어·창 대기에서 한 번에 대상 정보를 채웁니다.</p></div></div><div class="preset-list">${state.windowPresets.map(p=>`<div class="preset-row" data-preset-row="${p.id}"><input value="${esc(p.name)}" data-pname><select data-ptype><option value="exe" ${p.targetMode==='exe'?'selected':''}>APP / EXE</option><option value="title" ${p.targetMode==='title'?'selected':''}>창 제목</option></select><input value="${esc(p.target)}" data-ptarget><button data-pdel title="삭제">${ICONS.trash}</button></div>`).join('')}</div><div class="preset-add"><input id="newPresetName14" placeholder="이름"><select id="newPresetType14"><option value="exe">APP / EXE</option><option value="title">창 제목</option></select><input id="newPresetTarget14" placeholder="EXCEL.EXE / 창 제목"><button id="addPreset14">추가</button></div></section>`;
@@ -4313,36 +4327,167 @@ W_CleanTitle(title) {
     <article class="guide14-card"><span class="no">04 · PROJECT & AHK</span><h2>프로젝트와 AHK</h2><p>편집 내용은 브라우저에 자동 저장됩니다. 상단 <b>백업</b>으로 JSON을 보관하고, <b>AHK</b> 버튼에서 충돌·필수값을 검사한 뒤 AutoHotkey v2 파일을 생성합니다.</p><div class="guide14-actions" style="margin-top:12px"><a class="btn primary" href="https://www.autohotkey.com" target="_blank" rel="noopener noreferrer" style="text-decoration:none">AutoHotkey v2 다운로드 (www.autohotkey.com) ↗</a></div></article>
   </div></div>`;$('.main').append(guide);guide.querySelector('#guideMeasure14').onclick=downloadHelper14;
   function hideGuide14(){guide.hidden=true;document.body.classList.remove('guide14-view')}
-  function hideAllPrimary14(){['automationLayout','collectionsLayout','modulePlaceholder','clipboardLayout','replaceLayout','keymapLayout','filesLayout'].forEach(id=>{const e=$('#'+id);if(e)e.hidden=true});hideGuide14()}
+  const winUtilLayout=$('#winUtilLayout');
+  function hideWinUtil14(){if(winUtilLayout)winUtilLayout.hidden=true;document.body.classList.remove('winutil-view')}
+  function hideAllPrimary14(){['automationLayout','collectionsLayout','modulePlaceholder','clipboardLayout','winUtilLayout','replaceLayout','keymapLayout','filesLayout'].forEach(id=>{const e=$('#'+id);if(e)e.hidden=true});document.body.classList.remove('module-view','collection-view','clipboard-view','winutil-view','replace-view','keymap-view','files-view');hideGuide14()}
   function showGuide14(){hideAllPrimary14();guide.hidden=false;document.body.classList.add('guide14-view');$$('.rail .nav-btn').forEach(x=>x.classList.toggle('active',x.id==='guideNavBtn'));$('#crumbGroup').textContent='사용 안내';$('#crumbAuto').textContent='2.0';$('#statusGroup').textContent='사용 안내';$('#statusAuto').textContent='Guide';$('#statusNodes').textContent='2.0'}
   $('#guideNavBtn').onclick=showGuide14;
-  ['automationNavBtn','replaceNavBtn','keymapNavBtn','clipboardNavBtn','filesNavBtn','collectionNavBtn','railHome','topBrand'].forEach(id=>$('#'+id)?.addEventListener('click',hideGuide14,true));
+  ['automationNavBtn','replaceNavBtn','keymapNavBtn','clipboardNavBtn','winUtilNavBtn','filesNavBtn','collectionNavBtn','railHome','topBrand'].forEach(id=>$('#'+id)?.addEventListener('click',hideGuide14,true));
+
+  /* ---------- WINDOW UTILITY (창기억 → 창리콜 슬롯) ---------- */
+  const WIN_UTIL_ICON='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 14h8"/></svg>';
+  const wuState={slotId:'',query:''};
+  function wuNorm(){
+    ensure14();
+    if(!state.windowSlots.some(s=>s.id===wuState.slotId))wuState.slotId=state.windowSlots[0]?.id||'';
+  }
+  function wuSlot(){wuNorm();return state.windowSlots.find(s=>s.id===wuState.slotId)||state.windowSlots[0]||null}
+  function wuFresh(n=1){return{id:uid('wslot'),name:`창 슬롯 ${n}`,memo:'',enabled:true,remember:EMPTY14(),recall:EMPTY14()}}
+  function wuConflict(h,except){const c=conflictEntry14(h,except);return c?`${c.section} / ${c.name}`:''}
+  if(winUtilLayout){
+    winUtilLayout.innerHTML=`<aside class="clip13-sidebar"><div class="clip13-side-head"><div class="clip13-side-title"><strong>창 유틸리티</strong><span class="clip13-count" id="wu14Count">0</span></div></div><label class="clip13-search">${ICONS.search}<input id="wu14Search" placeholder="슬롯 검색"></label><div class="clip13-rule-head"><span>SLOTS</span><button type="button" id="wu14Add">+ 새 슬롯</button></div><div class="clip13-list" id="wu14List"></div><div class="clip13-foot"><span>2.0</span><span>Remember → Recall</span></div></aside><section class="clip13-main"><div class="clip13-main-inner"><div class="clip13-head"><div class="clip13-title"><span class="kicker">WINDOW UTILITY</span><h1 id="wu14Title">창 유틸리티</h1><p>창기억 단축키로 현재 활성 창을 저장하고, 창리콜 단축키로 언제든 맨 앞으로 활성화합니다.</p></div><div class="clip13-actions"><button type="button" class="btn clip13-mobile" id="wu14Mobile"><span class="txt">목록</span></button><button type="button" class="btn" id="wu14Dup">복제</button><button type="button" class="btn danger" id="wu14Del">삭제</button></div></div><div id="wu14Editor"></div></div></section>`;
+  }
+  function renderWinUtil14(){
+    if(!winUtilLayout)return;
+    wuNorm();
+    const s=wuSlot(),q=wuState.query.trim().toLowerCase();
+    const total=state.windowSlots.length;
+    $('#wu14Count').textContent=total;
+    const list=state.windowSlots.filter(x=>!q||`${x.name} ${x.memo||''} ${formatHotkey(x.remember)} ${formatHotkey(x.recall)}`.toLowerCase().includes(q)).slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ko',{numeric:true,sensitivity:'base'}));
+    $('#wu14List').innerHTML=list.length?list.map(x=>{
+      const r1=(x.remember?.key||modifierOnlyInfo156(x.remember))?formatHotkey(x.remember):'미지정';
+      const r2=(x.recall?.key||modifierOnlyInfo156(x.recall))?formatHotkey(x.recall):'미지정';
+      return `<button type="button" class="clip13-item ${x.id===s?.id?'active':''} ${x.enabled===false?'off':''}" data-wu14="${x.id}"><span class="clip13-item-icon">${WIN_UTIL_ICON}</span><span class="clip13-item-main"><strong>${esc(x.name)}</strong><small>${esc(r1)} → ${esc(r2)}</small></span><span class="clip13-badge">${x.enabled===false?'OFF':'ON'}</span></button>`;
+    }).join(''):`<div class="clip13-empty"><strong>슬롯이 없습니다.</strong>새 슬롯을 만들어 시작하세요.</div>`;
+    $('#wu14Title').textContent=s?.name||'창 유틸리티';
+    $('#wu14Dup').disabled=!s;
+    $('#wu14Del').disabled=!s;
+    if(document.body.classList.contains('winutil-view')){$('#crumbAuto').textContent=s?.name||'';$('#statusAuto').textContent=s?.name||'슬롯 없음';$('#statusNodes').textContent=`슬롯 ${total}`}
+    const ed=$('#wu14Editor');
+    if(!s){ed.innerHTML='<div class="clip13-empty"><strong>창 슬롯이 없습니다.</strong>왼쪽에서 새 슬롯을 만들어주세요.</div>';return}
+    const hasRem=Boolean(s.remember?.key||modifierOnlyInfo156(s.remember));
+    const hasRec=Boolean(s.recall?.key||modifierOnlyInfo156(s.recall));
+    const remTxt=hasRem?formatHotkey(s.remember):'미지정';
+    const recTxt=hasRec?formatHotkey(s.recall):'미지정';
+    const rc1=s.enabled===false?'':wuConflict(s.remember,`${s.id}:remember`);
+    const rc2=s.enabled===false?'':wuConflict(s.recall,`${s.id}:recall`);
+    ed.innerHTML=`<div class="clip13-editor">
+      <section class="clip13-card clip13-hero"><span class="clip13-hero-icon">${WIN_UTIL_ICON}</span><div class="clip13-hero-copy"><strong>${esc(s.name)}</strong><small>창기억 ${esc(remTxt)} → 창리콜 ${esc(recTxt)}</small></div><label class="clip13-switch"><input type="checkbox" id="wu14Enabled" ${s.enabled!==false?'checked':''}>활성</label></section>
+      <section class="clip13-card">
+        <div class="clip13-card-title">기본 설정</div>
+        <div class="clip13-grid">
+          <div class="clip13-field"><label>슬롯 이름</label><input id="wu14Name" value="${esc(s.name)}" placeholder="예: 엑셀 메인창"></div>
+          <div class="clip13-field"><label>메모</label><input id="wu14Memo" value="${esc(s.memo||'')}" placeholder="선택 사항"></div>
+        </div>
+      </section>
+      <section class="clip13-card">
+        <div class="clip13-card-title">창기억 → 창리콜 세트</div>
+        <div class="clip13-grid">
+          <div class="clip13-field">
+            <label>① 창기억 단축키</label>
+            <div style="display:flex;gap:6px;align-items:center">
+              <button type="button" class="clip13-hotkey" style="flex:1" id="wu14Remember">${ICONS.keyboard}<span>${esc(remTxt)}</span><small>설정</small></button>
+              <button type="button" class="btn" id="wu14RememberClear" ${hasRem?'':'disabled'} title="단축키 해제">해제</button>
+            </div>
+          </div>
+          <div class="clip13-field">
+            <label>② 창리콜 단축키</label>
+            <div style="display:flex;gap:6px;align-items:center">
+              <button type="button" class="clip13-hotkey" style="flex:1" id="wu14Recall">${ICONS.keyboard}<span>${esc(recTxt)}</span><small>설정</small></button>
+              <button type="button" class="btn" id="wu14RecallClear" ${hasRec?'':'disabled'} title="단축키 해제">해제</button>
+            </div>
+          </div>
+        </div>
+        ${rc1||rc2?`<div class="clip13-note" style="margin-top:10px;border-color:rgba(248,113,113,.35);color:#f87171">충돌 · ${esc(rc1||rc2)}</div>`:''}
+        <div class="clip13-note" style="margin-top:10px">① <b>창기억</b> 단축키를 누르면 현재 활성 창을 이 슬롯에 기억합니다. ② 이후 다른 작업을 하다가 <b>창리콜</b> 단축키를 누르면 기억된 창이 최소화 상태여도 복원되며 맨 앞으로 활성화됩니다. (창고정·창월담은 상단 <b>실행 설정</b>에서 지정)</div>
+      </section>
+      <div class="clip13-note" style="margin-top:2px;text-align:right;background:transparent;padding-right:2px">변경사항은 자동 저장됩니다.</div>
+    </div>`;
+    $('#wu14Remember').onclick=()=>openHotkeyEditor({title:`${s.name} · 창기억 단축키`,value:s.remember,exceptAutoId:`${s.id}:remember`,onApply:v=>{commit(()=>{s.remember=v||EMPTY14()},{render:false});markSaving();renderWinUtil14()}});
+    $('#wu14Recall').onclick=()=>openHotkeyEditor({title:`${s.name} · 창리콜 단축키`,value:s.recall,exceptAutoId:`${s.id}:recall`,onApply:v=>{commit(()=>{s.recall=v||EMPTY14()},{render:false});markSaving();renderWinUtil14()}});
+    $('#wu14RememberClear').onclick=()=>{commit(()=>{s.remember=EMPTY14()},{render:false});markSaving();renderWinUtil14()};
+    $('#wu14RecallClear').onclick=()=>{commit(()=>{s.recall=EMPTY14()},{render:false});markSaving();renderWinUtil14()};
+    $('#wu14Name').onchange=()=>{commit(()=>{s.name=$('#wu14Name').value.trim()||s.name},{render:false});markSaving();setTimeout(renderWinUtil14,0)};
+    $('#wu14Memo').onchange=()=>{commit(()=>{s.memo=$('#wu14Memo').value},{render:false});markSaving()};
+    $('#wu14Enabled').onchange=()=>{commit(()=>{s.enabled=$('#wu14Enabled').checked},{render:false});markSaving();renderWinUtil14()};
+  }
+  function showWinUtil14(){
+    hideAllPrimary14();
+    if(winUtilLayout)winUtilLayout.hidden=false;
+    document.body.classList.add('winutil-view');
+    $$('.rail .nav-btn').forEach(x=>x.classList.toggle('active',x.id==='winUtilNavBtn'));
+    closeInspector();
+    $('#crumbGroup').textContent='창 유틸리티';
+    $('#statusGroup').textContent='창 유틸리티';
+    renderWinUtil14();
+  }
+  $('#winUtilNavBtn')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();showWinUtil14()});
+  ['automationNavBtn','clipboardNavBtn','replaceNavBtn','keymapNavBtn','filesNavBtn','guideNavBtn','collectionNavBtn','railHome','topBrand'].forEach(id=>$('#'+id)?.addEventListener('click',hideWinUtil14,true));
+  if(winUtilLayout){
+    $('#wu14Search').oninput=e=>{wuState.query=e.target.value;renderWinUtil14()};
+    $('#wu14Add').onclick=()=>{const s=wuFresh(state.windowSlots.length+1);commit(()=>{state.windowSlots.push(s)},{render:false});wuState.slotId=s.id;markSaving();renderWinUtil14()};
+    $('#wu14Dup').onclick=()=>{const s=wuSlot();if(!s)return;const cp={...clone(s),id:uid('wslot'),name:s.name+' 복사본',remember:EMPTY14(),recall:EMPTY14()};commit(()=>{state.windowSlots.splice(state.windowSlots.indexOf(s)+1,0,cp)},{render:false});wuState.slotId=cp.id;markSaving();renderWinUtil14()};
+    $('#wu14Del').onclick=()=>{const s=wuSlot();if(s&&confirm(`「${s.name}」 창 슬롯을 삭제할까요?`)){commit(()=>{state.windowSlots=state.windowSlots.filter(x=>x.id!==s.id)},{render:false});wuState.slotId='';markSaving();renderWinUtil14()}};
+    $('#wu14List').onclick=e=>{const x=e.target.closest('[data-wu14]');if(x){wuState.slotId=x.dataset.wu14;renderWinUtil14();winUtilLayout.classList.remove('list-open')}};
+    $('#wu14Mobile').onclick=()=>winUtilLayout.classList.toggle('list-open');
+  }
 
   /* AHK v2 builder extension: emergency stop + global collision + Client/Screen coordinate mode */
   const api=window.easy1HK13||{},baseBuild=api.buildAHK,baseIssues=api.generationIssues;
   function coordModes14(scope){const q=[];const walk=nodes=>{for(const n of nodes||[]){if(['click','dblclick','move'].includes(n.type))q.push(n.coordMode||'Client');if(isContainer14(n))walk(n.children||[])}};if(scope==='current'){const a=currentAuto();if(a&&a.enabled!==false&&a.shortcut?.key)walk(a.nodes)}else for(const g of state.groups||[])for(const a of g.automations||[])if(a.enabled!==false&&a.shortcut?.key)walk(a.nodes);return q}
-  function winToolsAHK14(){
-    const defs=[
-      {id:'remember',fn:'E1_WinRemember'},
-      {id:'recall',fn:'E1_WinRecall'},
-      {id:'pinTop',fn:'E1_WinPinTop'},
-      {id:'desktopHop',fn:'E1_DesktopHop'}
-    ];
+  function escAhk14(s){return String(s||'').replace(/`/g,'``').replace(/"/g,'`"').replace(/\r?\n/g,' ')}
+  function winToolsAHK14(scope='all'){
     const bindings=[];
-    for(const d of defs){
+    let needSlotFns=false,needPinFn=false,needHopFn=false;
+    for(const d of [{id:'pinTop',fn:'E1_WinPinTop'},{id:'desktopHop',fn:'E1_DesktopHop'}]){
       const hk=state.runtimeSettings.winHotkeys?.[d.id];
       if(!hk?.key&&!modifierOnlyInfo156(hk))continue;
       const lbl=api.hotkeyLabel(hk);
       if(!lbl)continue;
       const cond=api.hotIfExpr?.(hk)||'';
       bindings.push(`${cond?'#HotIf '+cond+'\r\n':''}${lbl}::${d.fn}()\r\n${cond?'#HotIf\r\n':''}`);
+      if(d.id==='pinTop')needPinFn=true;
+      if(d.id==='desktopHop')needHopFn=true;
+    }
+    if(scope==='all'){
+      for(const ws of state.windowSlots||[]){
+        if(ws.enabled===false)continue;
+        const sKey=escAhk14(ws.id),sName=escAhk14(ws.name||'창 슬롯');
+        if(ws.remember?.key||modifierOnlyInfo156(ws.remember)){
+          const lbl=api.hotkeyLabel(ws.remember);
+          if(lbl){
+            const cond=api.hotIfExpr?.(ws.remember)||'';
+            bindings.push(`${cond?'#HotIf '+cond+'\r\n':''}${lbl}::E1_WinSlotRemember("${sKey}", "${sName}")\r\n${cond?'#HotIf\r\n':''}`);
+            needSlotFns=true;
+          }
+        }
+        if(ws.recall?.key||modifierOnlyInfo156(ws.recall)){
+          const lbl=api.hotkeyLabel(ws.recall);
+          if(lbl){
+            const cond=api.hotIfExpr?.(ws.recall)||'';
+            bindings.push(`${cond?'#HotIf '+cond+'\r\n':''}${lbl}::E1_WinSlotRecall("${sKey}", "${sName}")\r\n${cond?'#HotIf\r\n':''}`);
+            needSlotFns=true;
+          }
+        }
+      }
     }
     if(!bindings.length)return '';
-    return `\r\n; ===== window tools =====\r\nglobal E1_RememberedHwnd := 0\r\n${bindings.join('')}\r\nE1_WinNotice(msg) {\r\n  ToolTip(msg)\r\n  SetTimer(() => ToolTip(), -1300)\r\n}\r\n\r\nE1_WinRemember() {\r\n  global E1_RememberedHwnd\r\n  hwnd := WinExist("A")\r\n  if !hwnd {\r\n    E1_WinNotice("활성 창을 찾지 못했습니다.")\r\n    return\r\n  }\r\n  E1_RememberedHwnd := hwnd\r\n  title := ""\r\n  try title := WinGetTitle("ahk_id " hwnd)\r\n  E1_WinNotice("창 기억: " (title != "" ? SubStr(title, 1, 40) : "HWND " hwnd))\r\n}\r\n\r\nE1_WinRecall() {\r\n  global E1_RememberedHwnd\r\n  if !E1_RememberedHwnd || !WinExist("ahk_id " E1_RememberedHwnd) {\r\n    E1_WinNotice("기억된 창이 없습니다.")\r\n    return\r\n  }\r\n  try {\r\n    if (WinGetMinMax("ahk_id " E1_RememberedHwnd) = -1)\r\n      WinRestore("ahk_id " E1_RememberedHwnd)\r\n    WinActivate("ahk_id " E1_RememberedHwnd)\r\n  }\r\n}\r\n\r\nE1_WinPinTop() {\r\n  hwnd := WinExist("A")\r\n  if !hwnd\r\n    return\r\n  WinSetAlwaysOnTop(-1, "ahk_id " hwnd)\r\n  isTop := (WinGetExStyle("ahk_id " hwnd) & 0x8) != 0\r\n  E1_WinNotice(isTop ? "창 고정 ON (항상 위)" : "창 고정 OFF")\r\n}\r\n\r\nE1_DesktopHop() {\r\n  baseKey := "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops"\r\n  ids := ""\r\n  cur := ""\r\n  try ids := RegRead(baseKey, "VirtualDesktopIDs")\r\n  try cur := RegRead(baseKey, "CurrentVirtualDesktop")\r\n  if (cur = "") {\r\n    sid := 0\r\n    DllCall("ProcessIdToSessionId", "UInt", DllCall("GetCurrentProcessId", "UInt"), "UInt*", &sid)\r\n    if (sid > 0)\r\n      try cur := RegRead("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\" sid "\\VirtualDesktops", "CurrentVirtualDesktop")\r\n  }\r\n  count := StrLen(ids) // 32\r\n  if (count <= 1 || StrLen(cur) < 32) {\r\n    Send("#^{Right}")\r\n    return\r\n  }\r\n  idx := 0\r\n  Loop count {\r\n    if (SubStr(ids, (A_Index - 1) * 32 + 1, 32) = cur) {\r\n      idx := A_Index\r\n      break\r\n    }\r\n  }\r\n  if (idx > 0 && idx < count) {\r\n    Send("#^{Right}")\r\n  } else if (idx >= count) {\r\n    Loop (count - 1) {\r\n      Send("#^{Left}")\r\n      Sleep(35)\r\n    }\r\n  } else {\r\n    Send("#^{Right}")\r\n  }\r\n}\r\n; ===== window tools end =====\r\n`;
+    const fns=[`E1_WinNotice(msg) {\r\n  ToolTip(msg)\r\n  SetTimer(() => ToolTip(), -1300)\r\n}`];
+    if(needSlotFns){
+      fns.push(`E1_WinSlotRemember(slotKey, slotName) {\r\n  global E1_WinSlotMap\r\n  hwnd := WinExist("A")\r\n  if !hwnd {\r\n    E1_WinNotice("활성 창을 찾지 못했습니다.")\r\n    return\r\n  }\r\n  E1_WinSlotMap[slotKey] := hwnd\r\n  title := ""\r\n  try title := WinGetTitle("ahk_id " hwnd)\r\n  E1_WinNotice("창 기억 [" slotName "]: " (title != "" ? SubStr(title, 1, 36) : "HWND " hwnd))\r\n}`);
+      fns.push(`E1_WinSlotRecall(slotKey, slotName) {\r\n  global E1_WinSlotMap\r\n  if !E1_WinSlotMap.Has(slotKey) || !WinExist("ahk_id " E1_WinSlotMap[slotKey]) {\r\n    E1_WinNotice("[" slotName "] 기억된 창이 없습니다.")\r\n    return\r\n  }\r\n  hwnd := E1_WinSlotMap[slotKey]\r\n  try {\r\n    if (WinGetMinMax("ahk_id " hwnd) = -1)\r\n      WinRestore("ahk_id " hwnd)\r\n    WinActivate("ahk_id " hwnd)\r\n  }\r\n}`);
+    }
+    if(needPinFn){
+      fns.push(`E1_WinPinTop() {\r\n  hwnd := WinExist("A")\r\n  if !hwnd\r\n    return\r\n  WinSetAlwaysOnTop(-1, "ahk_id " hwnd)\r\n  isTop := (WinGetExStyle("ahk_id " hwnd) & 0x8) != 0\r\n  E1_WinNotice(isTop ? "창 고정 ON (항상 위)" : "창 고정 OFF")\r\n}`);
+    }
+    if(needHopFn){
+      fns.push(`E1_DesktopHop() {\r\n  baseKey := "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VirtualDesktops"\r\n  ids := ""\r\n  cur := ""\r\n  try ids := RegRead(baseKey, "VirtualDesktopIDs")\r\n  try cur := RegRead(baseKey, "CurrentVirtualDesktop")\r\n  if (cur = "") {\r\n    sid := 0\r\n    DllCall("ProcessIdToSessionId", "UInt", DllCall("GetCurrentProcessId", "UInt"), "UInt*", &sid)\r\n    if (sid > 0)\r\n      try cur := RegRead("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\" sid "\\VirtualDesktops", "CurrentVirtualDesktop")\r\n  }\r\n  count := StrLen(ids) // 32\r\n  if (count <= 1 || StrLen(cur) < 32) {\r\n    Send("#^{Right}")\r\n    return\r\n  }\r\n  idx := 0\r\n  Loop count {\r\n    if (SubStr(ids, (A_Index - 1) * 32 + 1, 32) = cur) {\r\n      idx := A_Index\r\n      break\r\n    }\r\n  }\r\n  if (idx > 0 && idx < count) {\r\n    Send("#^{Right}")\r\n  } else if (idx >= count) {\r\n    Loop (count - 1) {\r\n      Send("#^{Left}")\r\n      Sleep(35)\r\n    }\r\n  } else {\r\n    Send("#^{Right}")\r\n  }\r\n}`);
+    }
+    return `\r\n; ===== window tools =====\r\n${needSlotFns?'global E1_WinSlotMap := Map()\r\n':''}${bindings.join('')}\r\n${fns.join('\r\n\r\n')}\r\n; ===== window tools end =====\r\n`;
   }
   function buildAHK14(scope='all'){
     ensure14();let code=baseBuild(scope);const modes=coordModes14(scope);let mi=0;code=code.replace(/CoordMode "Mouse", "Client"/g,()=>`CoordMode "Mouse", "${modes[mi++]||'Client'}"`);
-    const stop=api.hotkeyLabel(state.runtimeSettings.stopHotkey),stopCond=api.hotIfExpr?.(state.runtimeSettings.stopHotkey)||'';const block=`\r\n; ===== emergency stop =====\r\n${stopCond?'#HotIf '+stopCond+'\r\n':''}${stop}::ExitApp()\r\n${stopCond?'#HotIf\r\n':''}Pause::ExitApp()\r\n; ===== emergency stop end =====\r\n`+winToolsAHK14();
+    const stop=api.hotkeyLabel(state.runtimeSettings.stopHotkey),stopCond=api.hotIfExpr?.(state.runtimeSettings.stopHotkey)||'';const block=`\r\n; ===== emergency stop =====\r\n${stopCond?'#HotIf '+stopCond+'\r\n':''}${stop}::ExitApp()\r\n${stopCond?'#HotIf\r\n':''}Pause::ExitApp()\r\n; ===== emergency stop end =====\r\n`+winToolsAHK14(scope);
     code=code.replace(/(SetWorkingDir A_ScriptDir\r?\n)/,`$1${block}`);return code;
   }
   function issues14(scope='all'){
@@ -4358,6 +4503,14 @@ W_CleanTitle(title) {
       if(isBarePause14(h))issues.push({level:'error',where,msg:'Pause는 보조 긴급 종료 키로 예약되어 있습니다.'});
       for(const e of entries)if(hotkeysConflict15(e.h,h))issues.push({level:'error',where,msg:`${e.section} · ${e.name} 단축키와 겹칩니다.`});
       for(let j=i+1;j<WIN_HOTKEY_DEFS14.length;j++){const d2=WIN_HOTKEY_DEFS14[j],h2=state.runtimeSettings.winHotkeys?.[d2.id];if((h2?.key||modifierOnlyInfo156(h2))&&hotkeysConflict15(h,h2))issues.push({level:'error',where,msg:`${d2.label} 단축키와 겹칩니다.`})}
+    }
+    const wuEntries=entries.filter(e=>e.section==='창 유틸리티');
+    for(const we of wuEntries){
+      for(const other of entries){
+        if(other.id===we.id)continue;
+        if(other.section==='창 유틸리티'&&other.id<we.id)continue;
+        if(hotkeysConflict15(we.h,other.h))issues.push({level:'error',where:`${we.section} · ${we.name}`,msg:`${other.section} · ${other.name} 단축키와 겹칩니다.`});
+      }
     }
     return issues;
   }
@@ -4922,7 +5075,8 @@ W_CleanTitle(title) {
     {id:'keymapLayout',key:'keymap',side:'.keymap-sidebar',def:278},
     {id:'filesLayout',key:'files',side:'.files-sidebar',def:272},
     {id:'collectionsLayout',key:'collections',side:'.collection-library',def:282},
-    {id:'clipboardLayout',key:'clipboard',side:'.clip13-sidebar',def:272,dynamic:true}
+    {id:'clipboardLayout',key:'clipboard',side:'.clip13-sidebar',def:272,dynamic:true},
+    {id:'winUtilLayout',key:'winutil',side:'.clip13-sidebar',def:272,dynamic:true}
   ];
   let saved={};
   try{saved=JSON.parse(localStorage.getItem(STORE)||'{}')||{}}catch(_){saved={}}
@@ -7292,6 +7446,7 @@ html[data-theme="dark"] .group-head[data-accent-color]{
     replaceNavBtn:'텍스트 대치',
     keymapNavBtn:'키매핑',
     clipboardNavBtn:'클립보드',
+    winUtilNavBtn:'창 유틸리티',
     filesNavBtn:'파일작업',
     guideNavBtn:'사용 안내'
   };
