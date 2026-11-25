@@ -1335,7 +1335,7 @@ body.module-view #addActionTop{display:none}
   ACTIONS.window={name:'창 제어',icon:'window',desc:'창 활성화·최소화·이동·닫기',defaults:{action:'activate',targetMode:'active',target:'',x:0,y:0,w:1000,h:700,delay:150}};
   ACTIONS.pageWait={name:'페이지 준비 대기',icon:'page',desc:'대상 창이 준비될 때까지 기다림',defaults:{targetMode:'active',target:'',condition:'exist',timeout:10,interval:250,delay:0}};
   ACTIONS.imageWait={name:'화면 인식 대기',icon:'image',desc:'기준 이미지가 나타나거나 사라질 때까지 대기',defaults:{image:'',condition:'appear',timeout:15,variation:35,delay:0}};
-  ACTIONS.folderOpen={name:'파일·폴더 열기',icon:'folder',desc:'특정 파일이나 폴더를 열거나 기존 창 활성화',defaults:{targetKind:'folder',path:'',programPath:'',behavior:'reuse',delay:200}};
+  ACTIONS.folderOpen={name:'파일·폴더 열기',icon:'folder',desc:'특정 파일이나 폴더를 열거나 기존 창 활성화',defaults:{targetKind:'folder',path:'',behavior:'reuse',delay:200}};
   ACTIONS.link={name:'링크 열기',icon:'link',desc:'URL을 지정 브라우저로 열기',defaults:{url:'',browser:'default',delay:300}};
 
   const ADV=new Set(['window','pageWait','imageWait','folderOpen','link']);
@@ -1345,7 +1345,7 @@ body.module-view #addActionTop{display:none}
       case'window':{const a={activate:'활성화',minimize:'최소화',maximize:'최대화',restore:'복원',close:'닫기',move:'이동·크기'}[n.action]||n.action;const t=n.targetMode==='active'?'현재 창':n.targetMode==='exe'?`APP ${n.target||'미지정'}`:`창 ${n.target||'미지정'}`;return`${a} · ${t}`}
       case'pageWait':{const t=n.targetMode==='active'?'현재 창':n.targetMode==='exe'?`APP ${n.target||'미지정'}`:`창 ${n.target||'미지정'}`;return`${t} · 최대 ${n.timeout||0}초`}
       case'imageWait':return`${n.image||'이미지 미지정'} · ${n.condition==='disappear'?'사라질 때':'나타날 때'}`;
-      case'folderOpen':{const k=n.targetKind==='file'?'파일':'폴더',m=n.behavior==='new'?'새 창':'창 활성화',pg=n.targetKind==='file'&&n.programPath?` · ${n.programPath}`:'';return`${k} · ${n.path||'경로 미지정'}${pg} · ${m}`}
+      case'folderOpen':{const k=n.targetKind==='file'?'파일':'폴더',m=n.behavior==='new'?'새 창':'창 활성화';return`${k} · ${n.path||'경로 미지정'} · ${m}`}
       case'link':return`${n.browser==='default'?'기본':n.browser} · ${n.url||'URL 미지정'}`;
       default:return oldDescribeV06(n);
     }
@@ -1367,8 +1367,7 @@ body.module-view #addActionTop{display:none}
         const beh=d.behavior==='new'?'new':'reuse';
         const pathLabel=kind==='file'?'파일 경로':'폴더 경로';
         const pathPh=kind==='file'?'예: C:\\Users\\Desktop\\보고서.xlsx':'예: C:\\Users\\Desktop\\업무폴더';
-        const progField=kind==='file'?`<div class="field"><label>실행 프로그램 (선택)</label><input class="input" data-field="programPath" value="${esc(d.programPath||'')}" placeholder="비워두면 기본 프로그램 · 예: notepad.exe 또는 C:\\Program Files\\...\\app.exe"></div>`:'';
-        return `<div class="field"><label>열기 대상</label><div class="insp-seg2" role="radiogroup" aria-label="열기 대상"><button type="button" class="insp-seg-btn ${kind==='folder'?'active':''}" data-seg-field="targetKind" data-seg-val="folder">폴더</button><button type="button" class="insp-seg-btn ${kind==='file'?'active':''}" data-seg-field="targetKind" data-seg-val="file">파일</button></div></div><div class="field"><label>${pathLabel}</label><input class="input" data-field="path" value="${esc(d.path||'')}" placeholder="${esc(pathPh)}"></div>${progField}<div class="field"><label>열기 방식</label><div class="insp-seg2" role="radiogroup" aria-label="열기 방식"><button type="button" class="insp-seg-btn ${beh==='reuse'?'active':''}" data-seg-field="behavior" data-seg-val="reuse">창 활성화</button><button type="button" class="insp-seg-btn ${beh==='new'?'active':''}" data-seg-field="behavior" data-seg-val="new">새 창</button></div></div><div class="inspector-note">${ICONS.folder}<span>${kind==='file'?(beh==='reuse'?'이미 열려 있는 파일 창(제목에 파일명 포함)이 있으면 활성화하고, 없으면 지정한 프로그램(또는 기본 프로그램)으로 엽니다.':'기존 창 여부와 관계없이 지정한 프로그램(또는 기본 프로그램)으로 파일을 새로 실행합니다.'):(beh==='reuse'?'해당 폴더가 탐색기에 이미 열려 있으면 그 창을 활성화하고, 없으면 탐색기로 엽니다.':'항상 새 탐색기 창으로 폴더를 엽니다.')}</span></div>`;
+        return `<div class="field"><label>열기 대상</label><div class="insp-seg2" role="radiogroup" aria-label="열기 대상"><button type="button" class="insp-seg-btn ${kind==='folder'?'active':''}" data-seg-field="targetKind" data-seg-val="folder">폴더</button><button type="button" class="insp-seg-btn ${kind==='file'?'active':''}" data-seg-field="targetKind" data-seg-val="file">파일</button></div></div><div class="field"><label>${pathLabel}</label><input class="input" data-field="path" value="${esc(d.path||'')}" placeholder="${esc(pathPh)}"></div><div class="field"><label>열기 방식</label><div class="insp-seg2" role="radiogroup" aria-label="열기 방식"><button type="button" class="insp-seg-btn ${beh==='reuse'?'active':''}" data-seg-field="behavior" data-seg-val="reuse">창 활성화</button><button type="button" class="insp-seg-btn ${beh==='new'?'active':''}" data-seg-field="behavior" data-seg-val="new">새 창</button></div></div><div class="inspector-note">${ICONS.folder}<span>${kind==='file'?(beh==='reuse'?'이미 열려 있는 파일 창(제목에 파일명 포함)이 있으면 활성화하고, 없으면 파일을 엽니다.':'기존 창 여부와 관계없이 지정한 파일을 새로 실행합니다.'):(beh==='reuse'?'해당 폴더가 탐색기에 이미 열려 있으면 그 창을 활성화하고, 없으면 탐색기로 엽니다.':'항상 새 탐색기 창으로 폴더를 엽니다.')}</span></div>`;
       }
       case'link':return `${field('URL','url',d.url||'')}${selectField('브라우저','browser',[['default','Windows 기본 브라우저'],['whale','Whale'],['chrome','Chrome'],['edge','Edge']],d.browser||'default')}`;
       default:return'';
@@ -2102,7 +2101,7 @@ body.module-view #addActionTop{display:none}
         out.push(I+`if !E1_WaitImage(${q(n.image||'')}, ${q(n.condition||'appear')}, ${Math.max(0,Number(n.timeout)||15)*1000}, ${Math.max(0,Math.min(255,Number(n.variation)||35))}) {`);
         out.push(I+'    '+`E1_Notice(${q('화면 인식 대기 시간이 초과되었습니다.')})`);out.push(I+'    return');out.push(I+'}');break;
       }
-      case'folderOpen':out.push(I+`E1_OpenPath(${q(n.path||'')}, ${q(n.targetKind==='file'?'file':'folder')}, ${n.behavior==='new'?'false':'true'}, ${q(n.programPath||'')})`);emitDelay12(n,depth,out);break;
+      case'folderOpen':out.push(I+`E1_OpenPath(${q(n.path||'')}, ${q(n.targetKind==='file'?'file':'folder')}, ${n.behavior==='new'?'false':'true'})`);emitDelay12(n,depth,out);break;
       case'link':out.push(I+`E1_OpenLink(${q(n.url||'')}, ${q(n.browser||'default')})`);emitDelay12(n,depth,out);break;
       case'clipCopy':
         out.push(I+`E1_CopyCandidate := E1_CopyStable(${Math.max(50,Number(n.timeout)||800)}, ${Math.max(0,Math.floor(Number(n.retries)||0))})`);
@@ -2248,7 +2247,7 @@ body.module-view #addActionTop{display:none}
       '    return true',
       '}',
       '',
-      'E1_OpenPath(path, kind := "folder", reuse := true, prog := "") {',
+      'E1_OpenPath(path, kind := "folder", reuse := true) {',
       '    if (path = "")',
       '        return false',
       '    if (kind != "file")',
@@ -2268,10 +2267,7 @@ body.module-view #addActionTop{display:none}
       '        }',
       '    }',
       '    try {',
-      '        if (prog != "")',
-      '            Run Chr(34) prog Chr(34) " " Chr(34) path Chr(34)',
-      '        else',
-      '            Run Chr(34) path Chr(34)',
+      '        Run Chr(34) path Chr(34)',
       '        return true',
       '    } catch {',
       '        E1_Notice("파일 열기 실패: " path)',
