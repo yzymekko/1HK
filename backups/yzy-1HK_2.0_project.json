@@ -1,0 +1,631 @@
+{
+  "version": "1.3",
+  "groups": [
+    {
+      "id": "grp_mwsrfwa8_p5rrl",
+      "name": "파일/폴더 열기 (ent+.)",
+      "automations": [
+        {
+          "id": "auto_mwsrfwa8_3ttn9",
+          "name": "첫 자동화",
+          "shortcut": {
+            "ctrl": "",
+            "alt": "L",
+            "shift": "",
+            "win": "",
+            "key": "F21",
+            "numLock": "on"
+          },
+          "nodes": [
+            {
+              "id": "node_mwt7yph1_gacl3",
+              "type": "folderOpen",
+              "targetKind": "file",
+              "path": "\"C:\\Users\\user\\Desktop\\★ 2026 계약관리  3.0.xlsx\"",
+              "behavior": "reuse",
+              "delay": 100,
+              "name": "★ 2026 계약관리  3.0.xlsx"
+            }
+          ],
+          "enabled": true
+        },
+        {
+          "id": "auto_mwt8523i_vib6q",
+          "name": "다운로드 폴더",
+          "enabled": true,
+          "shortcut": {
+            "ctrl": "",
+            "alt": "L",
+            "shift": "",
+            "win": "",
+            "key": "F22",
+            "numLock": "on"
+          },
+          "nodes": [
+            {
+              "id": "node_mwt8565v_dxuy2",
+              "type": "folderOpen",
+              "targetKind": "folder",
+              "path": "\"C:\\Users\\user\\Downloads\"",
+              "behavior": "reuse",
+              "delay": 100
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "actionSets": [],
+  "replaceGroups": [
+    {
+      "id": "rgrp_mwsrfwcb_y0uy3",
+      "name": "기본",
+      "rules": [
+        {
+          "id": "rule_mwt01j6m_0k5ee",
+          "name": "",
+          "trigger": ";체",
+          "replacement": "체육시설관리사업소",
+          "mode": "ko",
+          "caseSensitive": false,
+          "triggerOnSpace": true,
+          "keepSpace": true,
+          "enabled": true
+        },
+        {
+          "id": "rule_mwt7dmq1_gsitj",
+          "name": "",
+          "trigger": ";서",
+          "replacement": "서울특별시",
+          "mode": "ko",
+          "caseSensitive": false,
+          "triggerOnSpace": true,
+          "keepSpace": true,
+          "enabled": true
+        },
+        {
+          "id": "rule_mwt7e3eo_osmnc",
+          "name": "2",
+          "trigger": ";령에",
+          "replacement": "지방계약법 시행령에 따름",
+          "mode": "ko",
+          "caseSensitive": false,
+          "triggerOnSpace": true,
+          "keepSpace": true,
+          "enabled": true
+        },
+        {
+          "id": "rule_mwt7ekf3_p5fc7",
+          "name": "",
+          "trigger": ";임과",
+          "replacement": "붙임과 같이 계약하고자 함",
+          "mode": "ko",
+          "caseSensitive": false,
+          "triggerOnSpace": true,
+          "keepSpace": true,
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "keymapGroups": [
+    {
+      "id": "kgrp_mwsrfwcc_9jhc3",
+      "name": "기본",
+      "enabled": true,
+      "rules": []
+    }
+  ],
+  "clipboardTools": {
+    "slots": [
+      {
+        "id": "cslot_mwt6vpa2_r9u24",
+        "name": "슬롯 1",
+        "enabled": true,
+        "copy": {
+          "ctrl": "",
+          "alt": "",
+          "shift": "",
+          "win": "",
+          "key": "F21",
+          "numLock": "off"
+        },
+        "paste": {
+          "ctrl": "",
+          "alt": "",
+          "shift": "L",
+          "win": "",
+          "key": "F21",
+          "numLock": "off"
+        },
+        "rich": false,
+        "trim": true,
+        "removeLineBreaks": false,
+        "transformSource": "slot",
+        "transform": {
+          "mode": "none",
+          "extra": "",
+          "replacement": ""
+        }
+      },
+      {
+        "id": "cslot_mwt6xhuw_24qa5",
+        "name": "슬롯 2",
+        "enabled": true,
+        "copy": {
+          "ctrl": "",
+          "alt": "",
+          "shift": "",
+          "win": "",
+          "key": "F22",
+          "numLock": "off"
+        },
+        "paste": {
+          "ctrl": "",
+          "alt": "",
+          "shift": "L",
+          "win": "",
+          "key": "F22",
+          "numLock": "off"
+        },
+        "rich": false,
+        "trim": true,
+        "removeLineBreaks": false,
+        "transformSource": "slot",
+        "transform": {
+          "mode": "none",
+          "extra": "",
+          "replacement": ""
+        }
+      },
+      {
+        "id": "cslot_mwt6xi68_ktmgg",
+        "name": "슬롯 3",
+        "enabled": true,
+        "copy": {
+          "ctrl": "",
+          "alt": "",
+          "shift": "",
+          "win": "",
+          "key": "F13",
+          "numLock": "off"
+        },
+        "paste": {
+          "ctrl": "",
+          "alt": "",
+          "shift": "L",
+          "win": "",
+          "key": "F13",
+          "numLock": "off"
+        },
+        "rich": false,
+        "trim": true,
+        "removeLineBreaks": false,
+        "transformSource": "slot",
+        "transform": {
+          "mode": "none",
+          "extra": "",
+          "replacement": ""
+        }
+      },
+      {
+        "id": "cslot_mwt6zjda_ivuqw",
+        "name": "숫자_한글",
+        "enabled": true,
+        "copy": {
+          "ctrl": "",
+          "alt": "",
+          "shift": "",
+          "win": "",
+          "key": ""
+        },
+        "paste": {
+          "ctrl": "",
+          "alt": "",
+          "shift": "",
+          "win": "",
+          "key": "F24",
+          "numLock": ""
+        },
+        "rich": false,
+        "trim": true,
+        "removeLineBreaks": false,
+        "transformSource": "slot",
+        "transform": {
+          "mode": "numberKorean",
+          "extra": "",
+          "replacement": ""
+        }
+      },
+      {
+        "id": "cslot_mwt70ame_ffi65",
+        "name": "숫자_쉼표",
+        "enabled": true,
+        "copy": {
+          "ctrl": "",
+          "alt": "",
+          "shift": "",
+          "win": "",
+          "key": ""
+        },
+        "paste": {
+          "ctrl": "",
+          "alt": "",
+          "shift": "",
+          "win": "",
+          "key": "F23",
+          "numLock": ""
+        },
+        "rich": false,
+        "trim": true,
+        "removeLineBreaks": false,
+        "transformSource": "slot",
+        "transform": {
+          "mode": "digitsComma",
+          "extra": "",
+          "replacement": ""
+        }
+      }
+    ],
+    "smart": []
+  },
+  "fileJobs": [],
+  "actionCollections": [
+    {
+      "id": "acol_mwsrfwcg_mp2ti",
+      "name": "기본",
+      "collapsed": false
+    }
+  ],
+  "clipboardGroups": [
+    {
+      "id": "cgrp_mwt6vo3t_6vyhj",
+      "name": "복붙슬롯",
+      "slots": [
+        {
+          "id": "cslot_mwt6vpa2_r9u24",
+          "name": "슬롯 1",
+          "enabled": true,
+          "copy": {
+            "ctrl": "",
+            "alt": "",
+            "shift": "",
+            "win": "",
+            "key": "F21",
+            "numLock": "off"
+          },
+          "paste": {
+            "ctrl": "",
+            "alt": "",
+            "shift": "L",
+            "win": "",
+            "key": "F21",
+            "numLock": "off"
+          },
+          "rich": false,
+          "trim": true,
+          "removeLineBreaks": false,
+          "transformSource": "slot",
+          "transform": {
+            "mode": "none",
+            "extra": "",
+            "replacement": ""
+          }
+        },
+        {
+          "id": "cslot_mwt6xhuw_24qa5",
+          "name": "슬롯 2",
+          "enabled": true,
+          "copy": {
+            "ctrl": "",
+            "alt": "",
+            "shift": "",
+            "win": "",
+            "key": "F22",
+            "numLock": "off"
+          },
+          "paste": {
+            "ctrl": "",
+            "alt": "",
+            "shift": "L",
+            "win": "",
+            "key": "F22",
+            "numLock": "off"
+          },
+          "rich": false,
+          "trim": true,
+          "removeLineBreaks": false,
+          "transformSource": "slot",
+          "transform": {
+            "mode": "none",
+            "extra": "",
+            "replacement": ""
+          }
+        },
+        {
+          "id": "cslot_mwt6xi68_ktmgg",
+          "name": "슬롯 3",
+          "enabled": true,
+          "copy": {
+            "ctrl": "",
+            "alt": "",
+            "shift": "",
+            "win": "",
+            "key": "F13",
+            "numLock": "off"
+          },
+          "paste": {
+            "ctrl": "",
+            "alt": "",
+            "shift": "L",
+            "win": "",
+            "key": "F13",
+            "numLock": "off"
+          },
+          "rich": false,
+          "trim": true,
+          "removeLineBreaks": false,
+          "transformSource": "slot",
+          "transform": {
+            "mode": "none",
+            "extra": "",
+            "replacement": ""
+          }
+        },
+        {
+          "id": "cslot_mwt6zjda_ivuqw",
+          "name": "숫자_한글",
+          "enabled": true,
+          "copy": {
+            "ctrl": "",
+            "alt": "",
+            "shift": "",
+            "win": "",
+            "key": ""
+          },
+          "paste": {
+            "ctrl": "",
+            "alt": "",
+            "shift": "",
+            "win": "",
+            "key": "F24",
+            "numLock": ""
+          },
+          "rich": false,
+          "trim": true,
+          "removeLineBreaks": false,
+          "transformSource": "slot",
+          "transform": {
+            "mode": "numberKorean",
+            "extra": "",
+            "replacement": ""
+          }
+        },
+        {
+          "id": "cslot_mwt70ame_ffi65",
+          "name": "숫자_쉼표",
+          "enabled": true,
+          "copy": {
+            "ctrl": "",
+            "alt": "",
+            "shift": "",
+            "win": "",
+            "key": ""
+          },
+          "paste": {
+            "ctrl": "",
+            "alt": "",
+            "shift": "",
+            "win": "",
+            "key": "F23",
+            "numLock": ""
+          },
+          "rich": false,
+          "trim": true,
+          "removeLineBreaks": false,
+          "transformSource": "slot",
+          "transform": {
+            "mode": "digitsComma",
+            "extra": "",
+            "replacement": ""
+          }
+        }
+      ]
+    }
+  ],
+  "runtimeSettings": {
+    "stopHotkey": {
+      "ctrl": "A",
+      "alt": "A",
+      "shift": "",
+      "win": "",
+      "key": "F4"
+    },
+    "addActionHotkey": {
+      "ctrl": "",
+      "alt": "",
+      "shift": "",
+      "win": "",
+      "key": ""
+    },
+    "defaultActionDelayMs": 100,
+    "winHotkeys": {
+      "remember": {
+        "ctrl": "",
+        "alt": "",
+        "shift": "",
+        "win": "",
+        "key": ""
+      },
+      "recall": {
+        "ctrl": "",
+        "alt": "",
+        "shift": "",
+        "win": "",
+        "key": ""
+      },
+      "pinTop": {
+        "ctrl": "",
+        "alt": "",
+        "shift": "",
+        "win": "",
+        "key": ""
+      },
+      "desktopHop": {
+        "ctrl": "",
+        "alt": "",
+        "shift": "",
+        "win": "",
+        "key": ""
+      }
+    }
+  },
+  "windowPresets": [
+    {
+      "id": "wp_mwsrfwci_bjmt1",
+      "name": "Excel",
+      "targetMode": "exe",
+      "target": "EXCEL.EXE"
+    },
+    {
+      "id": "wp_mwsrfwci_hy7ax",
+      "name": "이호조",
+      "targetMode": "title",
+      "target": "지방재정관리시스템"
+    }
+  ],
+  "windowSlots": [
+    {
+      "id": "wslot_mwvd0hxq_28cm8",
+      "name": "창 슬롯 4",
+      "memo": "",
+      "enabled": true,
+      "remember": {
+        "ctrl": "",
+        "alt": "",
+        "shift": "L",
+        "win": "",
+        "key": "F14",
+        "numLock": "on"
+      },
+      "recall": {
+        "ctrl": "",
+        "alt": "",
+        "shift": "",
+        "win": "",
+        "key": "F14",
+        "numLock": "on"
+      }
+    },
+    {
+      "id": "wslot_mwvdkano_bldg8",
+      "name": "창 슬롯 1",
+      "memo": "",
+      "enabled": true,
+      "remember": {
+        "ctrl": "",
+        "alt": "",
+        "shift": "L",
+        "win": "",
+        "key": "F21",
+        "numLock": "on"
+      },
+      "recall": {
+        "ctrl": "",
+        "alt": "",
+        "shift": "",
+        "win": "",
+        "key": "F21",
+        "numLock": "on"
+      }
+    },
+    {
+      "id": "wslot_mwvdkc3y_vehqd",
+      "name": "창 슬롯 3",
+      "memo": "",
+      "enabled": true,
+      "remember": {
+        "ctrl": "",
+        "alt": "",
+        "shift": "L",
+        "win": "",
+        "key": "F13",
+        "numLock": "on"
+      },
+      "recall": {
+        "ctrl": "",
+        "alt": "",
+        "shift": "",
+        "win": "",
+        "key": "F13",
+        "numLock": "on"
+      }
+    },
+    {
+      "id": "wslot_mwvdkdya_b5oz4",
+      "name": "창 슬롯 2",
+      "memo": "",
+      "enabled": true,
+      "remember": {
+        "ctrl": "",
+        "alt": "",
+        "shift": "L",
+        "win": "",
+        "key": "F22",
+        "numLock": "on"
+      },
+      "recall": {
+        "ctrl": "",
+        "alt": "",
+        "shift": "",
+        "win": "",
+        "key": "F22",
+        "numLock": "on"
+      }
+    },
+    {
+      "id": "wslot_mwvd1iih_lkt4t",
+      "name": "창 슬롯 5",
+      "memo": "",
+      "enabled": true,
+      "remember": {
+        "ctrl": "",
+        "alt": "",
+        "shift": "L",
+        "win": "",
+        "key": "F15",
+        "numLock": "on"
+      },
+      "recall": {
+        "ctrl": "",
+        "alt": "",
+        "shift": "",
+        "win": "",
+        "key": "F15",
+        "numLock": "on"
+      }
+    },
+    {
+      "id": "wslot_mwvd2dc2_onqm4",
+      "name": "창 슬롯 6",
+      "memo": "",
+      "enabled": true,
+      "remember": {
+        "ctrl": "",
+        "alt": "",
+        "shift": "L",
+        "win": "",
+        "key": "F16",
+        "numLock": "on"
+      },
+      "recall": {
+        "ctrl": "",
+        "alt": "",
+        "shift": "",
+        "win": "",
+        "key": "F16",
+        "numLock": "on"
+      }
+    }
+  ]
+}
