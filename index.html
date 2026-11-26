@@ -4581,10 +4581,10 @@ W_CleanTitle(title) {
   function renderModPatternHtml14(prefix,p){
     const mods=[['ctrl','Ctrl'],['alt','Alt'],['shift','Shift'],['win','Win']].map(([k,lbl])=>{
       const v=p[k]||'';
-      return `<div class="batch-mod-pill ${v?'on':''}" data-bm="${prefix}:${k}"><span>${lbl}</span><div class="batch-mod-sides">${[['','—'],['A','•'],['L','L'],['R','R']].map(([sv,sl])=>`<button type="button" class="${v===sv?'active':''}" data-bms="${prefix}:${k}:${sv}">${sl}</button>`).join('')}</div></div>`;
+      return `<div class="mod-card ${v?'active':''}" data-bm="${prefix}:${k}"><div class="mod-name">${lbl}${v==='L'?' L':v==='R'?' R':''}</div><div class="mod-sides">${[['A','•'],['L','L'],['R','R']].map(([sv,sl])=>`<button type="button" class="mod-side ${v===sv?'on':''}" data-bms="${prefix}:${k}:${sv}">${sl}</button>`).join('')}</div></div>`;
     }).join('');
     const nl=p.numLock||'';
-    return `<div class="batch-mod-grid">${mods}</div><div class="batch-nl-row"><span>NumLock 조건</span><div class="hk-numlock-btns">${[['','상관없음'],['on','ON'],['off','OFF']].map(([nv,nlbl])=>`<button type="button" class="hk-nl-btn ${nl===nv?'active':''}" data-bnl="${prefix}:${nv}">${nlbl}</button>`).join('')}</div></div>`;
+    return `<div style="font-size:10.5px;color:var(--muted);margin:8px 0 6px">보조키 · 같은 키를 다시 누르면 해제</div><div class="hotkey-mods">${mods}</div><div class="hk-numlock15" style="margin-top:8px"><span><b>NumLock 조건</b><small>키 실행 조건</small></span><div class="hk-numlock-btns" role="radiogroup" aria-label="NumLock 조건">${[['','상관없음'],['on','ON'],['off','OFF']].map(([nv,nlbl])=>`<button type="button" class="hk-nl-btn ${nl===nv?'active':''}" data-bnl="${prefix}:${nv}" aria-pressed="${nl===nv}">${nlbl}</button>`).join('')}</div></div>`;
   }
   function openBatchSlotModal14(kind){
     document.querySelector('.batch-overlay14')?.remove();
@@ -4690,7 +4690,7 @@ W_CleanTitle(title) {
     function bindModButtons(root,targetObj){
       root.querySelectorAll('[data-bms]').forEach(b=>b.onclick=()=>{
         const [,k,sv]=b.dataset.bms.split(':');
-        targetObj[k]=sv;
+        targetObj[k]=targetObj[k]===sv?'':sv;
         draw();
       });
       root.querySelectorAll('[data-bnl]').forEach(b=>b.onclick=()=>{
