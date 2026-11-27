@@ -4632,6 +4632,7 @@ W_CleanTitle(title) {
       edit:{
         groupId:meta.curGroupId(),
         selectedIds:new Set(),
+        sideScope:'k1', // 'k1' | 'k2' | 'both'
         applyK1:true,
         k1Mode:'mods', // 'mods' | 'clear'
         k1:{ctrl:'A',alt:'',shift:'A',win:'',numLock:''},
@@ -4639,7 +4640,7 @@ W_CleanTitle(title) {
         k2Mode:'mods',
         k2:{ctrl:'A',alt:'',shift:'',win:'',numLock:''},
         applyKeys:false,
-        keyTarget:'both', // 'both' | 'k1' | 'k2'
+        keyTarget:'k1', // 'both' | 'k1' | 'k2'
         seq:{mode:'fkey',start:13,end:20,custom:'F13, F14, F21, F22'},
         applyEnabled:false,
         enabledVal:true,
@@ -4692,15 +4693,17 @@ W_CleanTitle(title) {
       const e=st.edit;
       let h1=clone(s[meta.k1Prop]||EMPTY14());
       let h2=clone(s[meta.k2Prop]||EMPTY14());
+      const touch1=e.sideScope==='k1'||e.sideScope==='both';
+      const touch2=e.sideScope==='k2'||e.sideScope==='both';
       if(e.applyKeys&&newKeys[idx]){
-        if(e.keyTarget==='both'||e.keyTarget==='k1')h1.key=newKeys[idx];
-        if(e.keyTarget==='both'||e.keyTarget==='k2')h2.key=newKeys[idx];
+        if(touch1&&(e.keyTarget==='both'||e.keyTarget==='k1'))h1.key=newKeys[idx];
+        if(touch2&&(e.keyTarget==='both'||e.keyTarget==='k2'))h2.key=newKeys[idx];
       }
-      if(e.applyK1){
+      if(touch1&&e.applyK1){
         if(e.k1Mode==='clear')h1=EMPTY14();
         else if(h1.key)h1=makeModPattern14(e.k1,h1.key);
       }
-      if(e.applyK2){
+      if(touch2&&e.applyK2){
         if(e.k2Mode==='clear')h2=EMPTY14();
         else if(h2.key)h2=makeModPattern14(e.k2,h2.key);
       }
@@ -4842,17 +4845,25 @@ W_CleanTitle(title) {
             }).join(''):'<div class="batch-empty">선택 가능한 슬롯이 없습니다.</div>'}</div>
           </section>
           <section class="runtime-card">
-            <div class="runtime-card-head"><div><strong>일괄 변경 규칙</strong><p>체크한 항목만 선택된 슬롯에 일괄 반영됩니다.</p></div></div>
-            <div class="batch-hk-box" id="beK1Box">
+            <div class="runtime-card-head"><div><strong>일괄 변경 규칙</strong><p>바꿀 대상을 한쪽만 고르거나 둘 다 선택해 일괄 반영할 수 있습니다.</p></div></div>
+            <div class="hk-numlock15" style="margin-bottom:10px">
+              <span><b>수정 대상 단축키</b><small>${isClip?'복사 · 붙여넣기 중 선택':'창기억 · 창리콜 중 선택'}</small></span>
+              <div class="hk-numlock-btns" role="radiogroup" aria-label="수정 대상 단축키">
+                <button type="button" class="hk-nl-btn ${e.sideScope==='k1'?'active':''}" data-beside="k1" aria-pressed="${e.sideScope==='k1'}">${isClip?'복사만':'창기억만'}</button>
+                <button type="button" class="hk-nl-btn ${e.sideScope==='k2'?'active':''}" data-beside="k2" aria-pressed="${e.sideScope==='k2'}">${isClip?'붙여넣기만':'창리콜만'}</button>
+                <button type="button" class="hk-nl-btn ${e.sideScope==='both'?'active':''}" data-beside="both" aria-pressed="${e.sideScope==='both'}">둘 다</button>
+              </div>
+            </div>
+            ${(e.sideScope==='k1'||e.sideScope==='both')?`<div class="batch-hk-box" id="beK1Box">
               <div class="batch-chk-row"><label class="batch-chk"><input type="checkbox" id="beApplyK1" ${e.applyK1?'checked':''}><strong>① ${esc(meta.k1Label)} 규칙 변경 (키 유지)</strong></label>${e.applyK1?`<select id="beK1Mode"><option value="mods" ${e.k1Mode==='mods'?'selected':''}>보조키·NumLock 변경</option><option value="clear" ${e.k1Mode==='clear'?'selected':''}>단축키 해제</option></select>`:''}</div>
               ${e.applyK1&&e.k1Mode==='mods'?renderModPatternHtml14('bek1',e.k1):''}
-            </div>
-            <div class="batch-hk-box" id="beK2Box" style="margin-top:10px">
+            </div>`:''}
+            ${(e.sideScope==='k2'||e.sideScope==='both')?`<div class="batch-hk-box" id="beK2Box" style="${e.sideScope==='both'?'margin-top:10px':''}">
               <div class="batch-chk-row"><label class="batch-chk"><input type="checkbox" id="beApplyK2" ${e.applyK2?'checked':''}><strong>② ${esc(meta.k2Label)} 규칙 변경 (키 유지)</strong></label>${e.applyK2?`<select id="beK2Mode"><option value="mods" ${e.k2Mode==='mods'?'selected':''}>보조키·NumLock 변경</option><option value="clear" ${e.k2Mode==='clear'?'selected':''}>단축키 해제</option></select>`:''}</div>
               ${e.applyK2&&e.k2Mode==='mods'?renderModPatternHtml14('bek2',e.k2):''}
-            </div>
+            </div>`:''}
             <div class="batch-hk-box" style="margin-top:10px">
-              <div class="batch-chk-row"><label class="batch-chk"><input type="checkbox" id="beApplyKeys" ${e.applyKeys?'checked':''}><strong>키 시퀀스 순서대로 재할당</strong></label>${e.applyKeys?`<select id="beKeyTarget"><option value="both" ${e.keyTarget==='both'?'selected':''}>양쪽 단축키 모두</option><option value="k1" ${e.keyTarget==='k1'?'selected':''}>${esc(meta.k1Label)}만</option><option value="k2" ${e.keyTarget==='k2'?'selected':''}>${esc(meta.k2Label)}만</option></select>`:''}</div>
+              <div class="batch-chk-row"><label class="batch-chk"><input type="checkbox" id="beApplyKeys" ${e.applyKeys?'checked':''}><strong>키 시퀀스 순서대로 재할당 (${e.sideScope==='k1'?(isClip?'복사만':'창기억만'):e.sideScope==='k2'?(isClip?'붙여넣기만':'창리콜만'):'양쪽 모두'})</strong></label></div>
               ${e.applyKeys?`<div style="margin-top:8px">${seqControlsHtml('be',e.seq)}</div>`:''}
             </div>
             <div class="batch-extra-row">
@@ -4879,14 +4890,20 @@ W_CleanTitle(title) {
           if(chk.checked)e.selectedIds.add(chk.dataset.beslot);else e.selectedIds.delete(chk.dataset.beslot);
           updatePreviewOnly();
         });
-        o.querySelector('#beApplyK1').onchange=ev=>{e.applyK1=ev.target.checked;draw()};
-        o.querySelector('#beApplyK2').onchange=ev=>{e.applyK2=ev.target.checked;draw()};
+        o.querySelectorAll('[data-beside]').forEach(btn=>btn.onclick=()=>{
+          e.sideScope=btn.dataset.beside;
+          if(e.sideScope==='k1'){e.applyK1=true;e.applyK2=false;e.keyTarget='k1'}
+          else if(e.sideScope==='k2'){e.applyK1=false;e.applyK2=true;e.keyTarget='k2'}
+          else{e.applyK1=true;e.applyK2=true;e.keyTarget='both'}
+          draw();
+        });
+        const ak1=o.querySelector('#beApplyK1');if(ak1)ak1.onchange=ev=>{e.applyK1=ev.target.checked;draw()};
+        const ak2=o.querySelector('#beApplyK2');if(ak2)ak2.onchange=ev=>{e.applyK2=ev.target.checked;draw()};
         o.querySelector('#beApplyKeys').onchange=ev=>{e.applyKeys=ev.target.checked;draw()};
         const k1m=o.querySelector('#beK1Mode');if(k1m)k1m.onchange=ev=>{e.k1Mode=ev.target.value;draw()};
         const k2m=o.querySelector('#beK2Mode');if(k2m)k2m.onchange=ev=>{e.k2Mode=ev.target.value;draw()};
-        const kt=o.querySelector('#beKeyTarget');if(kt)kt.onchange=ev=>{e.keyTarget=ev.target.value;updatePreviewOnly()};
-        if(e.applyK1&&e.k1Mode==='mods')bindModButtons(o.querySelector('#beK1Box'),e.k1);
-        if(e.applyK2&&e.k2Mode==='mods')bindModButtons(o.querySelector('#beK2Box'),e.k2);
+        if(o.querySelector('#beK1Box')&&e.applyK1&&e.k1Mode==='mods')bindModButtons(o.querySelector('#beK1Box'),e.k1);
+        if(o.querySelector('#beK2Box')&&e.applyK2&&e.k2Mode==='mods')bindModButtons(o.querySelector('#beK2Box'),e.k2);
         if(e.applyKeys)bindSeqControls('be',e.seq);
         o.querySelector('#beApplyEn').onchange=ev=>{e.applyEnabled=ev.target.checked;draw()};
         o.querySelector('#beEnVal').onchange=ev=>{e.enabledVal=ev.target.value==='1';updatePreviewOnly()};
