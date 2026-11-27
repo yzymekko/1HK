@@ -1795,7 +1795,7 @@ body.module-view #addActionTop{display:none}
 (()=>{
   const layout=$('#filesLayout'); if(!layout)return;
   const EMPTY11=()=>({ctrl:'',alt:'',shift:'',win:'',key:''});
-  const OP_LABEL={move:'이동',copy:'복사',rename:'이름변경',openWith:'프로그램 실행'};
+  const OP_LABEL={move:'이동',copy:'복사',rename:'이름변경',openWith:'프로그램 실행',openPath:'파일·폴더 열기'};
   const RENAME_LABEL={none:'변경 없음',prefix:'앞에 붙이기',suffix:'뒤에 붙이기',replace:'찾아 바꾸기'};
   const COLLISION_LABEL={number:'번호 붙이기',skip:'건너뛰기',overwrite:'덮어쓰기'};
   const fu={id:'',query:''};
@@ -1806,9 +1806,12 @@ body.module-view #addActionTop{display:none}
       if(!j.id){j.id=uid('filejob');changed=true}
       if(typeof j.name!=='string')j.name='파일 작업';
       if(!j.shortcut||typeof j.shortcut!=='object')j.shortcut=EMPTY11();
-      if(!['move','copy','rename','openWith'].includes(j.operation))j.operation='move';
+      if(!['move','copy','rename','openWith','openPath'].includes(j.operation))j.operation='move';
       if(typeof j.target!=='string')j.target='';
       if(typeof j.programPath!=='string')j.programPath='';
+      if(!['folder','file'].includes(j.targetKind))j.targetKind='folder';
+      if(typeof j.path!=='string')j.path='';
+      if(!['reuse','new'].includes(j.behavior))j.behavior='reuse';
       if(!['none','prefix','suffix','replace'].includes(j.renameMode))j.renameMode='none';
       for(const k of ['prefix','suffix','find','replacement'])if(typeof j[k]!=='string')j[k]='';
       if(!['number','skip','overwrite'].includes(j.collision))j.collision='number';
@@ -1821,13 +1824,17 @@ body.module-view #addActionTop{display:none}
   }
   ensure11();
   function job11(){ensure11();return state.fileJobs.find(x=>x.id===fu.id)||state.fileJobs[0]||null}
-  function fresh11(){return{id:uid('filejob'),name:'새 파일 작업',shortcut:EMPTY11(),operation:'move',target:'',programPath:'',renameMode:'none',prefix:'',suffix:'',find:'',replacement:'',collision:'number',createTarget:true,openTarget:false,enabled:true}}
+  function fresh11(){return{id:uid('filejob'),name:'새 파일 작업',shortcut:EMPTY11(),operation:'move',target:'',programPath:'',targetKind:'folder',path:'',behavior:'reuse',renameMode:'none',prefix:'',suffix:'',find:'',replacement:'',collision:'number',createTarget:true,openTarget:false,enabled:true}}
   function opts11(items,val){return items.map(([v,l])=>`<option value="${esc(v)}" ${String(v)===String(val)?'selected':''}>${esc(l)}</option>`).join('')}
   function splitName11(name){const i=name.lastIndexOf('.');return i>0?{base:name.slice(0,i),ext:name.slice(i)}:{base:name,ext:''}}
   function renamed11(name,j){const p=splitName11(name);let b=p.base;switch(j.renameMode){case'prefix':b=(j.prefix||'')+b;break;case'suffix':b=b+(j.suffix||'');break;case'replace':if(j.find)b=b.split(j.find).join(j.replacement||'');break}return b+p.ext}
   function issue11(j){
     const out=[];
     if(!j.shortcut?.key)out.push('실행 단축키가 지정되지 않았습니다.');
+    if(j.operation==='openPath'){
+      if(!String(j.path||'').trim())out.push(j.targetKind==='file'?'열 파일 경로를 지정하세요.':'열 폴더 경로를 지정하세요.');
+      return out;
+    }
     if(j.operation==='openWith'){
       if(!String(j.programPath||'').trim())out.push('실행할 프로그램 경로를 지정하세요.');
       return out;
@@ -1847,37 +1854,41 @@ body.module-view #addActionTop{display:none}
     return null;
   };
   function renderList11(){
-    ensure11();const q=fu.query.trim().toLowerCase(),items=state.fileJobs.filter(j=>!q||(j.name+' '+formatHotkey(j.shortcut)+' '+OP_LABEL[j.operation]).toLowerCase().includes(q)).slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ko',{numeric:true,sensitivity:'base'}));
+    ensure11();const q=fu.query.trim().toLowerCase(),items=state.fileJobs.filter(j=>!q||(j.name+' '+formatHotkey(j.shortcut)+' '+OP_LABEL[j.operation]+' '+(j.path||'')).toLowerCase().includes(q)).slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ko',{numeric:true,sensitivity:'base'}));
     $('#filesTotalCount').textContent=state.fileJobs.length;
-    $('#filesList').innerHTML=items.length?items.map(j=>`<button type="button" class="files-item ${j.id===fu.id?'active':''}" data-file-id="${j.id}"><span class="files-item-icon">${ICONS.folder}</span><span class="files-item-main"><strong>${esc(j.name||'파일 작업')}</strong><small>${esc(formatHotkey(j.shortcut))}</small></span><span class="files-item-badge">${esc(OP_LABEL[j.operation]||'작업')}</span></button>`).join(''):`<div class="files-list-empty">${q?'검색 결과가 없습니다.':'파일 작업이 없습니다.<br>「새 작업」으로 시작하세요.'}</div>`;
+    $('#filesList').innerHTML=items.length?items.map(j=>`<button type="button" class="files-item ${j.id===fu.id?'active':''}" data-file-id="${j.id}"><span class="files-item-icon">${ICONS.folder}</span><span class="files-item-main"><strong>${esc(j.name||'파일 작업')}</strong><small>${esc(formatHotkey(j.shortcut))}</small></span><span class="files-item-badge">${esc(j.operation==='openPath'?(j.targetKind==='file'?'파일 열기':'폴더 열기'):(OP_LABEL[j.operation]||'작업'))}</span></button>`).join(''):`<div class="files-list-empty">${q?'검색 결과가 없습니다.':'파일 작업이 없습니다.<br>「새 작업」으로 시작하세요.'}</div>`;
     $$('[data-file-id]',layout).forEach(b=>b.onclick=()=>{fu.id=b.dataset.fileId;layout.classList.remove('list-open');renderFiles11()});
   }
   function renderEditor11(){
     const j=job11(),ed=$('#filesEditor');$('#filesPageTitle').textContent=j?.name||'파일작업';$('#filesDuplicateBtn').disabled=!j;$('#filesDeleteBtn').disabled=!j;
     if(!j){ed.innerHTML=`<div class="files-empty"><strong>파일 작업이 없습니다.</strong><span>왼쪽의 「새 작업」으로 첫 포탈을 만드세요.</span></div>`;return}
-    const sample='보고서.pdf',result=renamed11(sample,j),issues=issue11(j),isOpenWith=j.operation==='openWith';
+    const sample='보고서.pdf',result=renamed11(sample,j),issues=issue11(j),isOpenWith=j.operation==='openWith',isOpenPath=j.operation==='openPath',isFileKind=j.targetKind==='file';
     ed.innerHTML=`<div class="files-editor">
-      <section class="files-hero-card"><span class="files-hero-icon">${ICONS.folder}</span><div class="files-hero-copy"><strong>${esc(j.name)}</strong><small>Windows 탐색기에서 선택한 파일을 대상으로 실행합니다.</small></div><label class="files-switch"><input type="checkbox" data-file-field="enabled" ${j.enabled!==false?'checked':''}>사용</label></section>
+      <section class="files-hero-card"><span class="files-hero-icon">${ICONS.folder}</span><div class="files-hero-copy"><strong>${esc(j.name)}</strong><small>${isOpenPath?'단축키를 누르면 지정한 파일 또는 폴더를 바로 엽니다.':'Windows 탐색기에서 선택한 파일을 대상으로 실행합니다.'}</small></div><label class="files-switch"><input type="checkbox" data-file-field="enabled" ${j.enabled!==false?'checked':''}>사용</label></section>
       ${issues.length?`<div class="files-warning">설정 확인 · ${esc(issues.join(' · '))}</div>`:''}
       <section class="files-card"><div class="files-card-title">기본 설정</div><div class="files-grid">
         <label class="files-field wide"><span>작업 이름</span><input data-file-field="name" value="${esc(j.name)}" placeholder="예: 계약서 보관"></label>
-        <label class="files-field"><span>작업 방식</span><select data-file-field="operation">${opts11([['move','이동'],['copy','복사'],['rename','이름변경만'],['openWith','지정 프로그램으로 열기']],j.operation)}</select></label>
+        <label class="files-field"><span>작업 방식</span><select data-file-field="operation">${opts11([['move','이동'],['copy','복사'],['rename','이름변경만'],['openWith','지정 프로그램으로 열기'],['openPath','특정 파일·폴더 열기']],j.operation)}</select></label>
         <div class="files-field"><span>실행 단축키</span><button type="button" class="files-shortcut-button" id="filesShortcutBtn">${ICONS.keyboard}<b>${esc(formatHotkey(j.shortcut))}</b><em>설정</em></button></div>
-        ${isOpenWith?`<label class="files-field wide"><span>실행 프로그램 경로</span><input data-file-field="programPath" value="${esc(j.programPath||'')}" placeholder="예: C:\\Program Files\\Notepad++\\notepad++.exe 또는 notepad.exe"></label>`:(j.operation==='rename'?'':`<label class="files-field wide"><span>대상 폴더</span><input data-file-field="target" value="${esc(j.target)}" placeholder="예: D:\\\\업무\\\\완료"></label>`)}
-      </div>${isOpenWith||j.operation==='rename'?'':`<div class="files-options"><label><input type="checkbox" data-file-field="createTarget" ${j.createTarget?'checked':''}>대상 폴더 자동 생성</label><label><input type="checkbox" data-file-field="openTarget" ${j.openTarget?'checked':''}>작업 후 폴더 열기</label></div>`}</section>
-      ${isOpenWith?'':`<section class="files-card"><div class="files-card-title">자동 이름변경</div><div class="files-grid">
+        ${isOpenPath?`
+          <label class="files-field"><span>대상 종류</span><select data-file-field="targetKind">${opts11([['folder','폴더'],['file','파일']],j.targetKind||'folder')}</select></label>
+          <label class="files-field"><span>열기 방식</span><select data-file-field="behavior">${opts11([['reuse','이미 열려 있으면 창 활성화'],['new','항상 새로 열기']],j.behavior||'reuse')}</select></label>
+          <label class="files-field wide"><span>${isFileKind?'열 파일 경로':'열 폴더 경로'}</span><input data-file-field="path" value="${esc(j.path||'')}" placeholder="${isFileKind?'예: C:\\Work\\업무일지.xlsx':'예: C:\\Work\\Projects'}"></label>
+        `:isOpenWith?`<label class="files-field wide"><span>실행 프로그램 경로</span><input data-file-field="programPath" value="${esc(j.programPath||'')}" placeholder="예: C:\\Program Files\\Notepad++\\notepad++.exe 또는 notepad.exe"></label>`:(j.operation==='rename'?'':`<label class="files-field wide"><span>대상 폴더</span><input data-file-field="target" value="${esc(j.target)}" placeholder="예: D:\\\\업무\\\\완료"></label>`)}
+      </div>${isOpenPath||isOpenWith||j.operation==='rename'?'':`<div class="files-options"><label><input type="checkbox" data-file-field="createTarget" ${j.createTarget?'checked':''}>대상 폴더 자동 생성</label><label><input type="checkbox" data-file-field="openTarget" ${j.openTarget?'checked':''}>작업 후 폴더 열기</label></div>`}</section>
+      ${isOpenPath||isOpenWith?'':`<section class="files-card"><div class="files-card-title">자동 이름변경</div><div class="files-grid">
         <label class="files-field"><span>이름변경 방식</span><select data-file-field="renameMode">${opts11([['none','변경 없음'],['prefix','앞에 붙이기'],['suffix','뒤에 붙이기'],['replace','찾아 바꾸기']],j.renameMode)}</select></label>
         <label class="files-field"><span>같은 이름의 파일이 있으면</span><select data-file-field="collision">${opts11([['number','번호 붙이기 · 권장'],['skip','건너뛰기'],['overwrite','덮어쓰기']],j.collision)}</select></label>
         ${j.renameMode==='prefix'?`<label class="files-field wide"><span>앞에 붙일 문자</span><input data-file-field="prefix" value="${esc(j.prefix)}" placeholder="예: 완료_"></label>`:''}
         ${j.renameMode==='suffix'?`<label class="files-field wide"><span>뒤에 붙일 문자</span><input data-file-field="suffix" value="${esc(j.suffix)}" placeholder="예: _최종"></label>`:''}
         ${j.renameMode==='replace'?`<label class="files-field"><span>찾을 내용</span><input data-file-field="find" value="${esc(j.find)}"></label><label class="files-field"><span>바꿀 내용</span><input data-file-field="replacement" value="${esc(j.replacement)}"></label>`:''}
       </div></section>`}
-      <section class="files-card"><div class="files-card-title">작업 미리보기</div>${isOpenWith?`<div class="files-preview"><div class="files-preview-row"><span>선택 파일</span><b>${esc(sample)}</b></div><div class="files-preview-row"><span>실행 프로그램</span><b>${esc(j.programPath||'프로그램 미지정')}</b></div><div class="files-preview-row"><span>동작</span><b>탐색기에서 선택한 파일을 지정 프로그램으로 실행</b></div></div>`:`<div class="files-preview"><div class="files-preview-row"><span>선택 파일</span><b>${esc(sample)}</b></div><div class="files-preview-row"><span>처리 후</span><b>${esc(result)}</b></div><div class="files-preview-row"><span>작업</span><b>${esc(OP_LABEL[j.operation])}${j.operation==='rename'?'':` → ${esc(j.target||'대상 폴더 미지정')}`}</b></div><div class="files-preview-row"><span>충돌 처리</span><b>${esc(COLLISION_LABEL[j.collision])}</b></div></div>`}<div class="files-folder-note">Windows 탐색기에서 파일을 선택한 뒤 단축키를 누르면 즉시 실행됩니다.</div></section>
+      <section class="files-card"><div class="files-card-title">작업 미리보기</div>${isOpenPath?`<div class="files-preview"><div class="files-preview-row"><span>대상 종류</span><b>${isFileKind?'파일':'폴더'}</b></div><div class="files-preview-row"><span>열 경로</span><b>${esc(j.path||'경로 미지정')}</b></div><div class="files-preview-row"><span>열기 방식</span><b>${j.behavior==='new'?'항상 새로 열기':'이미 열려 있으면 창 활성화'}</b></div></div>`:isOpenWith?`<div class="files-preview"><div class="files-preview-row"><span>선택 파일</span><b>${esc(sample)}</b></div><div class="files-preview-row"><span>실행 프로그램</span><b>${esc(j.programPath||'프로그램 미지정')}</b></div><div class="files-preview-row"><span>동작</span><b>탐색기에서 선택한 파일을 지정 프로그램으로 실행</b></div></div>`:`<div class="files-preview"><div class="files-preview-row"><span>선택 파일</span><b>${esc(sample)}</b></div><div class="files-preview-row"><span>처리 후</span><b>${esc(result)}</b></div><div class="files-preview-row"><span>작업</span><b>${esc(OP_LABEL[j.operation])}${j.operation==='rename'?'':` → ${esc(j.target||'대상 폴더 미지정')}`}</b></div><div class="files-preview-row"><span>충돌 처리</span><b>${esc(COLLISION_LABEL[j.collision])}</b></div></div>`}<div class="files-folder-note">${isOpenPath?'지정한 단축키를 누르면 해당 파일이나 폴더를 즉시 엽니다.':'Windows 탐색기에서 파일을 선택한 뒤 단축키를 누르면 즉시 실행됩니다.'}</div></section>
     </div>`;
     bindEditor11();
   }
   function renderFiles11(){ensure11();renderList11();renderEditor11();if(!layout.hidden){$('#crumbGroup').textContent='파일작업';$('#crumbAuto').textContent=job11()?.name||'포탈';$('#statusGroup').textContent='파일작업';$('#statusAuto').textContent=job11()?.name||'작업 없음';$('#statusNodes').textContent=`포탈 ${state.fileJobs.length}`}}
-  function saveField11(el){const j=job11();if(!j)return;const k=el.dataset.fileField;let v=el.type==='checkbox'?el.checked:el.value;commit(()=>{const x=state.fileJobs.find(z=>z.id===j.id);if(x)x[k]=v},{render:false});if(['operation','renameMode'].includes(k))renderFiles11();else{if(k==='name'){renderList11();$('#filesPageTitle').textContent=v||'파일작업';const h=$('.files-hero-copy strong',layout);if(h)h.textContent=v||'파일작업'}markSaving()}}
+  function saveField11(el){const j=job11();if(!j)return;const k=el.dataset.fileField;let v=el.type==='checkbox'?el.checked:el.value;commit(()=>{const x=state.fileJobs.find(z=>z.id===j.id);if(x)x[k]=v},{render:false});if(['operation','renameMode','targetKind','behavior'].includes(k))renderFiles11();else{if(k==='name'){renderList11();$('#filesPageTitle').textContent=v||'파일작업';const h=$('.files-hero-copy strong',layout);if(h)h.textContent=v||'파일작업'}markSaving()}}
   function bindEditor11(){
     $$('[data-file-field]',layout).forEach(el=>{const evt=el.type==='checkbox'||el.tagName==='SELECT'?'change':'change';el.addEventListener(evt,()=>saveField11(el));if(el.tagName==='INPUT'&&el.type!=='checkbox')el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.blur()}})});
     $('#filesShortcutBtn')?.addEventListener('click',()=>{const j=job11();if(!j)return;openHotkeyEditor({mode:'shortcut',title:`${j.name} · 실행 단축키`,value:j.shortcut,exceptAutoId:j.id,onApply:v=>{commit(()=>{const x=state.fileJobs.find(z=>z.id===j.id);if(x)x.shortcut=v},{render:false});renderFiles11();toast('파일작업 단축키를 저장했습니다.','good')}})});
@@ -2062,6 +2073,10 @@ body.module-view #addActionTop{display:none}
     for(const j of state.fileJobs||[]){
       if(j.enabled===false)continue;const w=`파일작업 · ${j.name}`;
       if(j.shortcut?.key)addHK(j.shortcut,w,j.id);else add('warn',w,'실행 단축키가 없어 생성하지 않습니다.');
+      if(j.operation==='openPath'){
+        if(!String(j.path||'').trim())add('error',w,j.targetKind==='file'?'열 파일 경로가 비어 있습니다.':'열 폴더 경로가 비어 있습니다.');
+        continue;
+      }
       if(j.operation==='openWith'){
         if(!String(j.programPath||'').trim())add('error',w,'실행할 프로그램 경로가 비어 있습니다.');
         continue;
@@ -3022,7 +3037,8 @@ body.module-view #addActionTop{display:none}
       hotIfStart15(j.shortcut,out);
       out.push(`${hotkeyLabel12(j.shortcut)}::`);
       out.push('{');
-      if(j.operation==='openWith')out.push(`    E1_OpenSelectedWith(${q(j.programPath||'')})`);
+      if(j.operation==='openPath')out.push(`    E1_OpenPath(${q(j.path||'')}, ${q(j.targetKind==='file'?'file':'folder')}, ${j.behavior==='new'?'false':'true'})`);
+      else if(j.operation==='openWith')out.push(`    E1_OpenSelectedWith(${q(j.programPath||'')})`);
       else out.push(`    E1_FilePortal(${q(j.operation)}, ${q(j.target||'')}, ${q(j.renameMode||'none')}, ${q(j.prefix||'')}, ${q(j.suffix||'')}, ${q(j.find||'')}, ${q(j.replacement||'')}, ${q(j.collision||'number')}, ${j.createTarget?'true':'false'}, ${j.openTarget?'true':'false'})`);
       out.push('}');hotIfEnd15(j.shortcut,out);out.push('');
     }
@@ -4623,6 +4639,8 @@ W_CleanTitle(title) {
         nameMode:'seq', // 'seq' | 'key'
         nameStart:1,
         seq:{mode:'fkey',start:13,end:16,custom:'F13, F14, F21, F22'},
+        k2SameSeq:true,
+        seq2:{mode:'fkey',start:17,end:20,custom:'F17, F18, F19, F20'},
         useK1:true,
         k1:{ctrl:'A',alt:'',shift:'A',win:'',numLock:''},
         useK2:true,
@@ -4642,6 +4660,8 @@ W_CleanTitle(title) {
         applyKeys:false,
         keyTarget:'k1', // 'both' | 'k1' | 'k2'
         seq:{mode:'fkey',start:13,end:20,custom:'F13, F14, F21, F22'},
+        k2SameSeq:true,
+        seq2:{mode:'fkey',start:21,end:24,custom:'F21, F22, F23, F24'},
         applyEnabled:false,
         enabledVal:true,
         applyClipOpts:false,
@@ -4666,12 +4686,15 @@ W_CleanTitle(title) {
       return (g?.slots||[]).map(s=>({g,s}));
     }
     function buildCreatePreview(){
-      const c=st.create,keys=genBatchKeys14(c.seq),rows=[];
+      const c=st.create,keys1=genBatchKeys14(c.seq),keys2=c.k2SameSeq?keys1:genBatchKeys14(c.seq2),rows=[];
+      const count=Math.max(c.useK1?keys1.length:0,c.useK2?keys2.length:0,keys1.length);
       const seenBatch=[];
-      keys.forEach((k,idx)=>{
-        const name=c.nameMode==='key'?`${c.prefix}${k}`:`${c.prefix}${(Number(c.nameStart)||1)+idx}`;
-        const h1=c.useK1?makeModPattern14(c.k1,k):EMPTY14();
-        const h2=c.useK2?makeModPattern14(c.k2,k):EMPTY14();
+      for(let idx=0;idx<count;idx++){
+        const k1=keys1[idx]||'',k2=keys2[idx]||'';
+        const kLabel=k1||k2;
+        const name=c.nameMode==='key'?`${c.prefix}${kLabel}`:`${c.prefix}${(Number(c.nameStart)||1)+idx}`;
+        const h1=c.useK1&&k1?makeModPattern14(c.k1,k1):EMPTY14();
+        const h2=c.useK2&&k2?makeModPattern14(c.k2,k2):EMPTY14();
         let conf='';
         if(h1.key){
           const e1=conflictEntry14(h1,'');
@@ -4685,19 +4708,19 @@ W_CleanTitle(title) {
           else if(seenBatch.some(x=>hotkeysConflict15(x,h2)))conf=`${meta.k2Label} 내부 중복`;
           seenBatch.push(h2);
         }
-        rows.push({name,k,h1,h2,conf});
-      });
+        rows.push({name,k:kLabel,h1,h2,conf});
+      }
       return rows;
     }
-    function computeEditedSlot(s,idx,newKeys){
+    function computeEditedSlot(s,idx,newKeys1,newKeys2){
       const e=st.edit;
       let h1=clone(s[meta.k1Prop]||EMPTY14());
       let h2=clone(s[meta.k2Prop]||EMPTY14());
       const touch1=e.sideScope==='k1'||e.sideScope==='both';
       const touch2=e.sideScope==='k2'||e.sideScope==='both';
-      if(e.applyKeys&&newKeys[idx]){
-        if(touch1&&(e.keyTarget==='both'||e.keyTarget==='k1'))h1.key=newKeys[idx];
-        if(touch2&&(e.keyTarget==='both'||e.keyTarget==='k2'))h2.key=newKeys[idx];
+      if(e.applyKeys){
+        if(touch1&&newKeys1[idx])h1.key=newKeys1[idx];
+        if(touch2&&newKeys2[idx])h2.key=newKeys2[idx];
       }
       if(touch1&&e.applyK1){
         if(e.k1Mode==='clear')h1=EMPTY14();
@@ -4766,12 +4789,13 @@ W_CleanTitle(title) {
         if(foot)foot.textContent=rows.length?`총 ${rows.length}개 생성${confCount?` · 충돌 ${confCount}건`:''}`:'키 목록이 비어 있습니다.';
         if(applyBtn){applyBtn.textContent=`${rows.length}개 일괄 생성`;applyBtn.disabled=!rows.length}
       }else{
-        const pool=editPool().filter(x=>st.edit.selectedIds.has(x.s.id));
-        const newKeys=st.edit.applyKeys?genBatchKeys14(st.edit.seq):[];
-        const anyOp=st.edit.applyK1||st.edit.applyK2||st.edit.applyKeys||st.edit.applyEnabled||st.edit.applyClipOpts||st.edit.applyMove;
+        const e=st.edit,pool=editPool().filter(x=>e.selectedIds.has(x.s.id));
+        const newKeys1=e.applyKeys?genBatchKeys14(e.seq):[];
+        const newKeys2=e.applyKeys?(e.sideScope==='k2'?genBatchKeys14(e.seq2):(e.k2SameSeq?newKeys1:genBatchKeys14(e.seq2))):[];
+        const anyOp=e.applyK1||e.applyK2||e.applyKeys||e.applyEnabled||e.applyClipOpts||e.applyMove;
         if(pv)pv.innerHTML=pool.length?pool.map(({s},i)=>{
-          const {h1,h2}=computeEditedSlot(s,i,newKeys);
-          return `<div class="batch-pv-row"><b>${esc(s.name)}</b><span>${esc(h1.key?formatHotkey(h1):'미지정')}</span><span>${esc(h2.key?formatHotkey(h2):'미지정')}</span><em>${st.edit.applyEnabled?(st.edit.enabledVal?'ON':'OFF'):(s.enabled===false?'OFF':'ON')}</em></div>`;
+          const {h1,h2}=computeEditedSlot(s,i,newKeys1,newKeys2);
+          return `<div class="batch-pv-row"><b>${esc(s.name)}</b><span>${esc(h1.key?formatHotkey(h1):'미지정')}</span><span>${esc(h2.key?formatHotkey(h2):'미지정')}</span><em>${e.applyEnabled?(e.enabledVal?'ON':'OFF'):(s.enabled===false?'OFF':'ON')}</em></div>`;
         }).join(''):'<div class="batch-empty">위 목록에서 수정할 슬롯을 선택하세요.</div>';
         if(foot)foot.textContent=pool.length?`선택됨 ${pool.length}개${anyOp?'':' · 변경할 항목을 체크하세요'}`:'수정할 슬롯을 선택하세요.';
         if(applyBtn){applyBtn.textContent=`${pool.length}개 일괄 수정`;applyBtn.disabled=!pool.length||!anyOp}
@@ -4795,8 +4819,15 @@ W_CleanTitle(title) {
             ${c.nameMode==='seq'?`<div class="batch-range" style="margin-top:8px"><span>시작 번호</span><input type="number" id="bcNameStart" min="1" max="999" value="${c.nameStart}"></div>`:''}
           </section>
           <section class="runtime-card">
-            <div class="runtime-card-head"><div><strong>연속 키 시퀀스</strong><p>각 슬롯에 순서대로 배정될 키 목록입니다.</p></div></div>
-            ${seqControlsHtml('bc',c.seq)}
+            <div class="runtime-card-head"><div><strong>연속 키 시퀀스</strong><p>각 슬롯에 순서대로 배정될 키 목록입니다. (${esc(meta.k1Label)}와 ${esc(meta.k2Label)}에 서로 다른 키도 지정 가능)</p></div></div>
+            <div class="batch-hk-box">
+              <div class="batch-chk-row" style="margin-bottom:8px"><strong>① ${esc(meta.k1Label)} 키 시퀀스</strong></div>
+              ${seqControlsHtml('bc',c.seq)}
+            </div>
+            <div class="batch-hk-box" style="margin-top:10px">
+              <div class="batch-chk-row"><strong>② ${esc(meta.k2Label)} 키 시퀀스</strong><label class="batch-chk"><input type="checkbox" id="bcK2SameSeq" ${c.k2SameSeq?'checked':''}><span>①과 같은 키 사용</span></label></div>
+              ${c.k2SameSeq?'':`<div style="margin-top:8px">${seqControlsHtml('bc2',c.seq2)}</div>`}
+            </div>
           </section>
           <section class="runtime-card">
             <div class="runtime-card-head"><div><strong>공통 단축키 규칙</strong><p>보조키(Ctrl·Alt·Shift·Win)와 NumLock 조건은 모든 슬롯에 동일하게 적용됩니다.</p></div></div>
@@ -4818,9 +4849,11 @@ W_CleanTitle(title) {
         o.querySelector('#bcPrefix').oninput=e=>{c.prefix=e.target.value;updatePreviewOnly()};
         o.querySelector('#bcNameMode').onchange=e=>{c.nameMode=e.target.value;draw()};
         const ns=o.querySelector('#bcNameStart');if(ns)ns.oninput=e=>{c.nameStart=e.target.value;updatePreviewOnly()};
+        o.querySelector('#bcK2SameSeq').onchange=e=>{c.k2SameSeq=e.target.checked;draw()};
         o.querySelector('#bcUseK1').onchange=e=>{c.useK1=e.target.checked;draw()};
         o.querySelector('#bcUseK2').onchange=e=>{c.useK2=e.target.checked;draw()};
         bindSeqControls('bc',c.seq);
+        if(!c.k2SameSeq)bindSeqControls('bc2',c.seq2);
         if(c.useK1)bindModButtons(o.querySelector('#bcK1Box'),c.k1);
         if(c.useK2)bindModButtons(o.querySelector('#bcK2Box'),c.k2);
         if(isClip){
@@ -4863,8 +4896,8 @@ W_CleanTitle(title) {
               ${e.applyK2&&e.k2Mode==='mods'?renderModPatternHtml14('bek2',e.k2):''}
             </div>`:''}
             <div class="batch-hk-box" style="margin-top:10px">
-              <div class="batch-chk-row"><label class="batch-chk"><input type="checkbox" id="beApplyKeys" ${e.applyKeys?'checked':''}><strong>키 시퀀스 순서대로 재할당 (${e.sideScope==='k1'?(isClip?'복사만':'창기억만'):e.sideScope==='k2'?(isClip?'붙여넣기만':'창리콜만'):'양쪽 모두'})</strong></label></div>
-              ${e.applyKeys?`<div style="margin-top:8px">${seqControlsHtml('be',e.seq)}</div>`:''}
+              <div class="batch-chk-row"><label class="batch-chk"><input type="checkbox" id="beApplyKeys" ${e.applyKeys?'checked':''}><strong>연속 키 시퀀스 순서대로 재할당 (${e.sideScope==='k1'?(isClip?'복사만':'창기억만'):e.sideScope==='k2'?(isClip?'붙여넣기만':'창리콜만'):'둘 다'})</strong></label></div>
+              ${e.applyKeys?(e.sideScope==='k1'?`<div style="margin-top:8px">${seqControlsHtml('be',e.seq)}</div>`:e.sideScope==='k2'?`<div style="margin-top:8px">${seqControlsHtml('be2',e.seq2)}</div>`:`<div style="margin-top:8px"><div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px">① ${esc(meta.k1Label)} 키 시퀀스</div>${seqControlsHtml('be',e.seq)}<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)"><div class="batch-chk-row" style="margin-bottom:${e.k2SameSeq?'0':'6px'}"><span style="font-size:11px;font-weight:700;color:var(--text)">② ${esc(meta.k2Label)} 키 시퀀스</span><label class="batch-chk"><input type="checkbox" id="beK2SameSeq" ${e.k2SameSeq?'checked':''}><span>①과 같은 키 사용</span></label></div>${e.k2SameSeq?'':seqControlsHtml('be2',e.seq2)}</div></div>`):''}
             </div>
             <div class="batch-extra-row">
               <label class="batch-chk"><input type="checkbox" id="beApplyEn" ${e.applyEnabled?'checked':''}><span>활성 상태</span></label>
@@ -4900,11 +4933,15 @@ W_CleanTitle(title) {
         const ak1=o.querySelector('#beApplyK1');if(ak1)ak1.onchange=ev=>{e.applyK1=ev.target.checked;draw()};
         const ak2=o.querySelector('#beApplyK2');if(ak2)ak2.onchange=ev=>{e.applyK2=ev.target.checked;draw()};
         o.querySelector('#beApplyKeys').onchange=ev=>{e.applyKeys=ev.target.checked;draw()};
+        const beSame=o.querySelector('#beK2SameSeq');if(beSame)beSame.onchange=ev=>{e.k2SameSeq=ev.target.checked;draw()};
         const k1m=o.querySelector('#beK1Mode');if(k1m)k1m.onchange=ev=>{e.k1Mode=ev.target.value;draw()};
         const k2m=o.querySelector('#beK2Mode');if(k2m)k2m.onchange=ev=>{e.k2Mode=ev.target.value;draw()};
         if(o.querySelector('#beK1Box')&&e.applyK1&&e.k1Mode==='mods')bindModButtons(o.querySelector('#beK1Box'),e.k1);
         if(o.querySelector('#beK2Box')&&e.applyK2&&e.k2Mode==='mods')bindModButtons(o.querySelector('#beK2Box'),e.k2);
-        if(e.applyKeys)bindSeqControls('be',e.seq);
+        if(e.applyKeys){
+          if(e.sideScope==='k1'||e.sideScope==='both')bindSeqControls('be',e.seq);
+          if(e.sideScope==='k2'||(e.sideScope==='both'&&!e.k2SameSeq))bindSeqControls('be2',e.seq2);
+        }
         o.querySelector('#beApplyEn').onchange=ev=>{e.applyEnabled=ev.target.checked;draw()};
         o.querySelector('#beEnVal').onchange=ev=>{e.enabledVal=ev.target.value==='1';updatePreviewOnly()};
         o.querySelector('#beApplyMove').onchange=ev=>{e.applyMove=ev.target.checked;draw()};
@@ -4952,11 +4989,12 @@ W_CleanTitle(title) {
       }else{
         const e=st.edit,targets=editPool().filter(x=>e.selectedIds.has(x.s.id));
         if(!targets.length)return;
-        const newKeys=e.applyKeys?genBatchKeys14(e.seq):[];
+        const newKeys1=e.applyKeys?genBatchKeys14(e.seq):[];
+        const newKeys2=e.applyKeys?(e.sideScope==='k2'?genBatchKeys14(e.seq2):(e.k2SameSeq?newKeys1:genBatchKeys14(e.seq2))):[];
         const dstGroup=e.applyMove?meta.groups().find(x=>x.id===e.moveGroupId):null;
         commit(()=>{
           targets.forEach(({g,s},idx)=>{
-            const {h1,h2}=computeEditedSlot(s,idx,newKeys);
+            const {h1,h2}=computeEditedSlot(s,idx,newKeys1,newKeys2);
             s[meta.k1Prop]=h1;
             s[meta.k2Prop]=h2;
             if(e.applyEnabled)s.enabled=e.enabledVal;
