@@ -379,10 +379,15 @@ function E1_applyDefaultDelay145(node){
   background:#f3f4f6;
   color:#98a2b3;
 }
-.keymap-side-title .keymap-group-toggle1510 + span{margin-left:0}
-.keymap-item.off{opacity:.58}
-.keymap-item.group-off{opacity:.5}
-.keymap-item.group-off .keymap-item-badge{background:#f2f4f7;color:#98a2b3}
+.keymap-side-title .keymap-group-toggle1510 + span,
+.replace-side-title .keymap-group-toggle1510 + span,
+.clip13-side-title .keymap-group-toggle1510 + span,
+.files-side-title .keymap-group-toggle1510 + span{margin-left:0}
+.replace-side-title strong,.clip13-side-title strong{margin-right:auto}
+.library-title-row .keymap-group-toggle1510{margin-left:0;height:30px;flex:none}
+.keymap-item.off,.replace-item.off{opacity:.58}
+.keymap-item.group-off,.replace-item.group-off,.clip13-item.group-off,.auto-item.group-off{opacity:.5}
+.keymap-item.group-off .keymap-item-badge,.replace-item.group-off .replace-item-badge,.clip13-item.group-off .clip13-badge{background:#f2f4f7;color:#98a2b3}
 </style>
 
 </head>
@@ -418,6 +423,7 @@ function E1_applyDefaultDelay145(node){
         <div class="library-head">
           <div class="library-title-row">
             <button class="group-switch" id="groupSwitch"><span id="groupName">업무</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m6 9 6 6 6-6"/></svg></button>
+            <button type="button" class="keymap-group-toggle1510" id="autoGroupToggle" title="현재 그룹 활성/비활성">ON</button>
             <button class="mini-add" id="addGroupBtn" title="그룹 추가"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg></button>
           </div>
           <label class="library-search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="automationSearch" placeholder="자동화 검색"></label>
@@ -768,7 +774,7 @@ function findHotkeyConflict(h,exceptAutoId=''){const sig=hotkeySignature(h);if(!
 function groupCount(){return state.groups.length}
 function nodeCount(){return currentAuto()?.nodes?.length||0}
 function renderAll(){normalizeSelection();renderLibrary();renderCanvas();renderStatus();renderInspectorIfOpen()}
-function renderLibrary(){const g=currentGroup();$('#groupName').textContent=g?.name||'그룹 없음';$('#crumbGroup').textContent=g?.name||'';const q=ui.query.trim().toLowerCase();const list=(g?.automations||[]).filter(a=>!q||(a.name+' '+formatHotkey(a.shortcut)).toLowerCase().includes(q)).slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ko',{numeric:true,sensitivity:'base'}));$('#autoCount').textContent=list.length;$('#autoList').innerHTML=list.length?list.map(a=>`<div class="auto-item ${a.id===ui.autoId?'active':''}" data-auto="${a.id}" tabindex="0"><span class="active-line"></span><div class="auto-main"><div class="auto-title">${esc(a.name)}</div><div class="auto-hotkey">${esc(formatHotkey(a.shortcut))}</div></div><button class="auto-more" data-auto-more="${a.id}" aria-label="더보기">${ICONS.more}</button></div>`).join(''):`<div class="library-empty">${q?'검색 결과가 없습니다.':'자동화가 없습니다.<br>「새 자동화」로 시작하세요.'}</div>`}
+function renderLibrary(){const g=currentGroup();$('#groupName').textContent=(g?.name||'그룹 없음')+(g&&g.enabled===false?' · OFF':'');$('#crumbGroup').textContent=g?.name||'';const gt=$('#autoGroupToggle');if(gt&&g){const off=g.enabled===false;gt.textContent=off?'OFF':'ON';gt.classList.toggle('off',off);gt.setAttribute('aria-pressed',off?'false':'true')}const q=ui.query.trim().toLowerCase();const list=(g?.automations||[]).filter(a=>!q||(a.name+' '+formatHotkey(a.shortcut)).toLowerCase().includes(q)).slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ko',{numeric:true,sensitivity:'base'}));$('#autoCount').textContent=list.length;$('#autoList').innerHTML=list.length?list.map(a=>`<div class="auto-item ${a.id===ui.autoId?'active':''} ${g?.enabled===false?'group-off':''}" data-auto="${a.id}" tabindex="0"><span class="active-line"></span><div class="auto-main"><div class="auto-title">${esc(a.name)}</div><div class="auto-hotkey">${esc(formatHotkey(a.shortcut))}</div></div><button class="auto-more" data-auto-more="${a.id}" aria-label="더보기">${ICONS.more}</button></div>`).join(''):`<div class="library-empty">${q?'검색 결과가 없습니다.':'자동화가 없습니다.<br>「새 자동화」로 시작하세요.'}</div>`}
 function describeNode(n){switch(n.type){case'click':case'dblclick':return`${n.x}, ${n.y} · ${n.button}`;case'move':return`${n.x}, ${n.y} · ${n.duration||0}ms`;case'scroll':return`${n.direction} · ${n.amount}회`;case'text':return n.text||'텍스트 미입력';case'key':return formatHotkey(n.keyChord);case'wait':return`${n.ms||0}ms`;case'run':return n.target||'실행 대상 미지정';case'comment':return n.text||'메모 없음';default:return''}}
 function renderCanvas(){const g=currentGroup(),a=currentAuto();$('#workflowTitle').textContent=a?.name||'자동화를 선택하세요';$('#crumbAuto').textContent=a?.name||'';const meta=$('#workflowMeta');meta.innerHTML=a?`<span class="meta-chip">${a.nodes.length}개 동작</span><button class="meta-chip hotkey" id="metaHotkey">${ICONS.keyboard}<span>${esc(formatHotkey(a.shortcut))}</span></button>`:'';if(a&&$('#metaHotkey'))$('#metaHotkey').onclick=()=>openHotkeyEditor({mode:'shortcut',value:a.shortcut,onApply:v=>commit(()=>a.shortcut=v),exceptAutoId:a.id,title:'자동화 단축키'});$('#hotkeyBtn').disabled=!a;$('#addActionBtn').disabled=!a;$('#addActionTop').disabled=!a;const f=$('#flow');if(!a){f.innerHTML=`<div class="flow-empty"><div class="empty-icon">${ICONS.play}</div><strong>자동화를 선택하세요.</strong><span>왼쪽 목록에서 자동화를 열거나 새로 만드세요.</span></div>`;return}if(!a.nodes.length){f.innerHTML=`<div class="flow-empty"><div class="empty-icon">${ICONS.plus}</div><strong>아직 동작이 없습니다.</strong><span>「동작 추가」를 눌러 첫 단계를 만드세요.</span></div>`;return}f.innerHTML=a.nodes.map((n,i)=>`<div class="node-row ${ui.selectedNodeId===n.id?'selected':''}" data-node="${n.id}" draggable="true"><span class="drag-handle" title="드래그해 순서 변경">${ICONS.drag}</span><span class="node-icon">${ICONS[ACTIONS[n.type]?.icon]||ICONS.command}</span><div class="node-main"><div class="node-name">${i+1}. ${esc(ACTIONS[n.type]?.name||n.type)}</div><div class="node-sub">${esc(ACTIONS[n.type]?.desc||'')}</div></div><div class="node-detail">${esc(describeNode(n))}</div><div class="node-delay">${Number(n.delay)||0} ms</div><div class="row-actions"><button class="row-btn move" data-move="up" title="위로">${ICONS.up}</button><button class="row-btn move" data-move="down" title="아래로">${ICONS.down}</button><button class="row-btn" data-node-more title="메뉴">${ICONS.more}</button></div></div>`).join('');bindNodeDrag()}
 function renderStatus(){const g=currentGroup(),a=currentAuto();$('#statusGroup').textContent=`그룹 ${state.groups.length}`;$('#statusAuto').textContent=`자동화 ${g?.automations?.length||0}`;$('#statusNodes').textContent=`동작 ${a?.nodes?.length||0}`}
@@ -2099,7 +2105,7 @@ body.module-view #addActionTop{display:none}
 
     const autos=[];
     if(scope==='current'){const a=currentAuto();if(a)autos.push([currentGroup()?.name||'자동화',a])}
-    else for(const g of state.groups||[])for(const a of g.automations||[])autos.push([g.name,a]);
+    else for(const g of state.groups||[])if(g.enabled!==false)for(const a of g.automations||[])autos.push([g.name,a]);
 
     for(const [gn,a] of autos){
       if(a.enabled===false)continue;
@@ -2127,19 +2133,27 @@ body.module-view #addActionTop{display:none}
       }
     }
     const seenReplace=new Map();
-    for(const g of state.replaceGroups||[])for(const r of g.rules||[]){
-      if(r.enabled===false)continue;
-      const trig=String(r.trigger||'').normalize('NFC'),w=`자동변환 · ${g.name} / ${r.name||trig||'규칙'}`;
-      if(!trig.trim()){add('warn',w,'입력 문자열이 없어 생성하지 않습니다.');continue}
-      if(/[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(trig)&&r.mode==='en')add('warn',w,'한글 입력 문자열에 영어 전용 모드가 지정되어 발동하지 않습니다.');
-      const rKey=`${r.caseSensitive?trig:trig.toLowerCase()}|${r.mode||'all'}|${r.triggerOnSpace?1:0}`;
-      if(seenReplace.has(rKey))add('warn',w,`입력 문자열이 「${seenReplace.get(rKey)}」과 중복됩니다.`);
-      else seenReplace.set(rKey,w);
+    for(const g of state.replaceGroups||[]){
+      if(g.enabled===false)continue;
+      for(const r of g.rules||[]){
+        if(r.enabled===false)continue;
+        const trig=String(r.trigger||'').normalize('NFC'),w=`자동변환 · ${g.name} / ${r.name||trig||'규칙'}`;
+        if(!trig.trim()){add('warn',w,'입력 문자열이 없어 생성하지 않습니다.');continue}
+        if(/[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(trig)&&r.mode==='en')add('warn',w,'한글 입력 문자열에 영어 전용 모드가 지정되어 발동하지 않습니다.');
+        const rKey=`${r.caseSensitive?trig:trig.toLowerCase()}|${r.mode||'all'}|${r.triggerOnSpace?1:0}`;
+        if(seenReplace.has(rKey))add('warn',w,`입력 문자열이 「${seenReplace.get(rKey)}」과 중복됩니다.`);
+        else seenReplace.set(rKey,w);
+      }
     }
-    const c=state.clipboardTools;
-    if(c){
-      (c.slots||[]).forEach((x,i)=>{if(x.enabled===false)return;if(x.copy?.key)addHK(x.copy,`클립보드 슬롯 ${i+1} · 복사`,x.id+':copy');if(x.paste?.key)addHK(x.paste,`클립보드 슬롯 ${i+1} · 붙여넣기`,x.id+':paste')});
-      (c.smart||[]).forEach((r,i)=>{if(r.enabled!==false&&r.shortcut?.key)addHK(r.shortcut,`스마트 가공 · ${r.name||r.mode||i+1}`,r.id)});
+    const cGroups=Array.isArray(state.clipboardGroups)&&state.clipboardGroups.length
+      ? state.clipboardGroups
+      : [{name:'기본',enabled:true,slots:state.clipboardTools?.slots||[]}];
+    for(const cg of cGroups){
+      if(cg.enabled===false)continue;
+      (cg.slots||[]).forEach((x,i)=>{if(x.enabled===false)return;if(x.copy?.key)addHK(x.copy,`클립보드 슬롯 · ${cg.name} / ${x.name||i+1} · 복사`,x.id+':copy');if(x.paste?.key)addHK(x.paste,`클립보드 슬롯 · ${cg.name} / ${x.name||i+1} · 붙여넣기`,x.id+':paste')});
+    }
+    if(state.clipboardTools?.smart){
+      (state.clipboardTools.smart||[]).forEach((r,i)=>{if(r.enabled!==false&&r.shortcut?.key)addHK(r.shortcut,`스마트 가공 · ${r.name||r.mode||i+1}`,r.id)});
     }
     const fGroups=Array.isArray(state.fileJobGroups)&&state.fileJobGroups.length?state.fileJobGroups:[{name:'기본',enabled:true,jobs:state.fileJobs||[]}];
     for(const fg of fGroups){
@@ -3039,7 +3053,7 @@ body.module-view #addActionTop{display:none}
 
   function emitClipboardTools12(out){
     const grouped=Array.isArray(state.clipboardGroups)&&state.clipboardGroups.length
-      ? state.clipboardGroups.flatMap(g=>(g.slots||[]).map(s=>({...s,_group:g.name})))
+      ? state.clipboardGroups.filter(g=>g.enabled!==false).flatMap(g=>(g.slots||[]).map(s=>({...s,_group:g.name})))
       : (state.clipboardTools?.slots||[]);
     grouped.forEach((slot,i)=>{
       if(slot.enabled===false)return;
@@ -3141,10 +3155,10 @@ body.module-view #addActionTop{display:none}
       const a=currentAuto(),g=currentGroup();if(a&&g)emitAutomation12(g,a,out);
     }else{
       out.push('; ===== automations =====');out.push('');
-      for(const g of state.groups||[])for(const a of g.automations||[])emitAutomation12(g,a,out);
+      for(const g of state.groups||[])if(g.enabled!==false)for(const a of g.automations||[])emitAutomation12(g,a,out);
       out.push('; ===== auto replace =====');out.push('');
       const replaceRules176=[];
-      for(const g of state.replaceGroups||[])for(const r of g.rules||[])replaceRules176.push(r);
+      for(const g of state.replaceGroups||[])if(g.enabled!==false)for(const r of g.rules||[])replaceRules176.push(r);
       emitKoreanReplaceRuntime176(replaceRules176,out);
       for(const r of replaceRules176)emitHotstring12(r,out);
       out.push('; ===== key mapping =====');out.push('');
@@ -3654,20 +3668,20 @@ body.replace-view .replace-layout,body.keymap-view .keymap-layout,body.clipboard
 
   function ensure13(){
     let changed=false;
-    for(const g of state.groups||[])for(const a of g.automations||[]){if(typeof a.enabled!=='boolean'){a.enabled=true;changed=true}}
-    if(!Array.isArray(state.replaceGroups)||!state.replaceGroups.length){state.replaceGroups=[{id:uid('rgrp'),name:'기본',rules:[]}];changed=true}
+    for(const g of state.groups||[]){if(typeof g.enabled!=='boolean'){g.enabled=true;changed=true}for(const a of g.automations||[]){if(typeof a.enabled!=='boolean'){a.enabled=true;changed=true}}}
+    if(!Array.isArray(state.replaceGroups)||!state.replaceGroups.length){state.replaceGroups=[{id:uid('rgrp'),name:'기본',enabled:true,rules:[]}];changed=true}
     if(!Array.isArray(state.keymapGroups)||!state.keymapGroups.length){state.keymapGroups=[{id:uid('kgrp'),name:'기본',enabled:true,rules:[]}];changed=true}
     if(!Array.isArray(state.clipboardGroups)||!state.clipboardGroups.length){
-      const old=state.clipboardTools||{},base={id:uid('cgrp'),name:'기본',slots:[]};
+      const old=state.clipboardTools||{},base={id:uid('cgrp'),name:'기본',enabled:true,slots:[]};
       (old.slots||[]).forEach((s,i)=>base.slots.push({id:s.id||uid('cslot'),name:s.name||`슬롯 ${i+1}`,enabled:s.enabled!==false,copy:s.copy||EMPTY(),paste:s.paste||EMPTY(),rich:s.rich!==false,trim:!!s.trim,removeLineBreaks:!!s.removeLineBreaks,transformSource:'slot',transform:{mode:s.transform?.mode||'none',extra:s.transform?.extra||'',replacement:s.transform?.replacement||''}}));
       if(!base.slots.length)base.slots.push({id:uid('cslot'),name:'슬롯 1',enabled:true,copy:EMPTY(),paste:EMPTY(),rich:true,trim:false,removeLineBreaks:false,transformSource:'slot',transform:{mode:'none',extra:'',replacement:''}});
       state.clipboardGroups=[base];
-      if((old.smart||[]).length){const legacy={id:uid('cgrp'),name:'이전 스마트 가공',slots:[]};(old.smart||[]).forEach((r,i)=>legacy.slots.push({id:uid('cslot'),name:r.name||`변환 ${i+1}`,enabled:r.enabled!==false,copy:EMPTY(),paste:r.shortcut||EMPTY(),rich:false,trim:false,removeLineBreaks:false,transformSource:'clipboard',transform:{mode:r.mode||'trim',extra:r.extra||'',replacement:r.replacement||''}}));state.clipboardGroups.push(legacy)}
+      if((old.smart||[]).length){const legacy={id:uid('cgrp'),name:'이전 스마트 가공',enabled:true,slots:[]};(old.smart||[]).forEach((r,i)=>legacy.slots.push({id:uid('cslot'),name:r.name||`변환 ${i+1}`,enabled:r.enabled!==false,copy:EMPTY(),paste:r.shortcut||EMPTY(),rich:false,trim:false,removeLineBreaks:false,transformSource:'clipboard',transform:{mode:r.mode||'trim',extra:r.extra||'',replacement:r.replacement||''}}));state.clipboardGroups.push(legacy)}
       changed=true;
     }
-    for(const g of state.replaceGroups){g.rules=Array.isArray(g.rules)?g.rules:[];for(const r of g.rules){if(typeof r.triggerOnSpace!=='boolean'){r.triggerOnSpace=false;changed=true}if(typeof r.keepSpace!=='boolean'){r.keepSpace=true;changed=true}}}
+    for(const g of state.replaceGroups){if(typeof g.enabled!=='boolean'){g.enabled=true;changed=true}g.rules=Array.isArray(g.rules)?g.rules:[];for(const r of g.rules){if(typeof r.triggerOnSpace!=='boolean'){r.triggerOnSpace=false;changed=true}if(typeof r.keepSpace!=='boolean'){r.keepSpace=true;changed=true}}}
     for(const g of state.keymapGroups){g.rules=Array.isArray(g.rules)?g.rules:[];if(typeof g.enabled!=='boolean'){g.enabled=true;changed=true}}
-    for(const g of state.clipboardGroups){g.slots=Array.isArray(g.slots)?g.slots:[];for(const s of g.slots){if(typeof s.enabled!=='boolean')s.enabled=true;if(!s.name)s.name='클립보드 슬롯';s.copy=s.copy||EMPTY();s.paste=s.paste||EMPTY();if(typeof s.removeLineBreaks!=='boolean'){s.removeLineBreaks=false;changed=true}s.transform=s.transform||{mode:'none',extra:'',replacement:''};if(s.transform.mode==='trim'){s.trim=true;s.transform.mode='none';changed=true}if(s.transform.mode==='plainPaste'){s.rich=false;s.transform.mode='none';changed=true}if(!['none','remove','join','replace','lines','digitsComma','numberKorean','digits'].includes(s.transform.mode)){s.transform.mode='none';changed=true}if(!s.transformSource)s.transformSource='slot'}}
+    for(const g of state.clipboardGroups){if(typeof g.enabled!=='boolean'){g.enabled=true;changed=true}g.slots=Array.isArray(g.slots)?g.slots:[];for(const s of g.slots){if(typeof s.enabled!=='boolean')s.enabled=true;if(!s.name)s.name='클립보드 슬롯';s.copy=s.copy||EMPTY();s.paste=s.paste||EMPTY();if(typeof s.removeLineBreaks!=='boolean'){s.removeLineBreaks=false;changed=true}s.transform=s.transform||{mode:'none',extra:'',replacement:''};if(s.transform.mode==='trim'){s.trim=true;s.transform.mode='none';changed=true}if(s.transform.mode==='plainPaste'){s.rich=false;s.transform.mode='none';changed=true}if(!['none','remove','join','replace','lines','digitsComma','numberKorean','digits'].includes(s.transform.mode)){s.transform.mode='none';changed=true}if(!s.transformSource)s.transformSource='slot'}}
     syncClipboard13();
     if(changed)markSaving();
   }
@@ -3676,7 +3690,7 @@ body.replace-view .replace-layout,body.keymap-view .keymap-layout,body.clipboard
 
   /* automation groups + automation active state */
   const oldFind=findHotkeyConflict;
-  findHotkeyConflict=function(h,exceptAutoId=''){const sig=hotkeySignature(h);if(!sig)return null;for(const g of state.groups||[])for(const a of g.automations||[])if(a.enabled!==false&&a.id!==exceptAutoId&&hotkeySignature(a.shortcut)===sig)return{g,a};return null};
+  findHotkeyConflict=function(h,exceptAutoId=''){const sig=hotkeySignature(h);if(!sig)return null;for(const g of state.groups||[]){if(g.enabled===false)continue;for(const a of g.automations||[])if(a.enabled!==false&&a.id!==exceptAutoId&&hotkeySignature(a.shortcut)===sig)return{g,a}}return null};
 
   function automationGroupDialog13(){
     const g=currentGroup();if(!g)return;
@@ -3684,11 +3698,12 @@ body.replace-view .replace-layout,body.keymap-view .keymap-layout,body.clipboard
   }
   openGroupMenu=function(){
     closeFloating();const b=$('#groupSwitch'),r=b.getBoundingClientRect(),p=document.createElement('div');p.className='popover';p.style.left=Math.min(r.left,innerWidth-220)+'px';p.style.top=(r.bottom+6)+'px';
-    p.innerHTML=(state.groups||[]).map(g=>`<button data-g="${g.id}">${g.id===ui.groupId?'✓ ':''}${esc(g.name)} <small style="margin-left:auto;color:#98a2b3">${g.automations?.length||0}</small></button>`).join('')+`<hr><button data-manage>그룹 관리</button>`;document.body.append(p);
+    p.innerHTML=(state.groups||[]).map(g=>`<button data-g="${g.id}">${g.id===ui.groupId?'✓ ':''}${esc(g.name)}${g.enabled===false?' · OFF':''} <small style="margin-left:auto;color:#98a2b3">${g.automations?.length||0}</small></button>`).join('')+`<hr><button data-manage>그룹 관리</button>`;document.body.append(p);
     $$('[data-g]',p).forEach(x=>x.onclick=()=>{ui.groupId=x.dataset.g;ui.autoId=currentGroup()?.automations?.[0]?.id||'';ui.selectedNodeId='';closeFloating();closeInspector();renderAll()});p.querySelector('[data-manage]').onclick=()=>{closeFloating();automationGroupDialog13()};
   };
   $('#groupSwitch').onclick=openGroupMenu;
-  $('#addGroupBtn').onclick=()=>openName13({title:'새 자동화 그룹',value:'새 그룹',onApply:name=>commit(s=>{const g={id:uid('grp'),name,automations:[]};s.groups.push(g);ui.groupId=g.id;ui.autoId=''})});
+  $('#autoGroupToggle')?.addEventListener('click',()=>{const g=currentGroup();if(!g)return;const next=g.enabled===false;commit(()=>{g.enabled=next});toast(next?`「${g.name}」 그룹을 사용합니다.`:`「${g.name}」 그룹을 비활성화했습니다.`,next?'good':'')});
+  $('#addGroupBtn').onclick=()=>openName13({title:'새 자동화 그룹',value:'새 그룹',onApply:name=>commit(s=>{const g={id:uid('grp'),name,enabled:true,automations:[]};s.groups.push(g);ui.groupId=g.id;ui.autoId=''})});
   $('#addAutomationBtn').onclick=()=>openName13({title:'새 자동화',value:'새 업무 자동화',onApply:name=>{const g=currentGroup();commit(()=>{const a={id:uid('auto'),name,enabled:true,shortcut:EMPTY(),nodes:[]};g.automations.push(a);ui.autoId=a.id})}});
 
   const baseAutoMenu13=openAutoMenu;
@@ -3713,7 +3728,7 @@ body.replace-view .replace-layout,body.keymap-view .keymap-layout,body.clipboard
 
   /* ---------- TEXT REPLACEMENT ---------- */
   const rLayout=$('#replaceLayout');
-  rLayout.innerHTML=`<aside class="replace-sidebar"><div class="replace-side-head"><div class="replace-side-title"><strong>텍스트 대치</strong><span id="r13Count">0</span></div><div class="replace-group-row"><select id="r13Group"></select><button type="button" class="replace-square" id="r13GroupAdd" title="그룹 추가">+</button><button type="button" class="replace-square" id="r13GroupMore" title="그룹 관리">${ICONS.more}</button></div></div><label class="replace-search">${ICONS.search}<input id="r13Search" placeholder="텍스트 대치 검색"></label><div class="bulk-tools"><span class="bulk-label">EXCEL</span><button type="button" id="r13Template">양식 다운로드</button><button type="button" id="r13Import">불러오기</button><input type="file" id="r13File" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></div><div class="replace-rule-head"><span>RULES</span><div class="replace-head-btns"><button type="button" id="r13SortName" title="메모(이름)순 정렬">이름순</button><button type="button" id="r13Add">+ 새 규칙</button></div></div><div class="replace-list" id="r13List"></div><div class="replace-sidebar-foot"><span>2.0</span><span>Excel ready</span></div></aside><section class="replace-main"><div class="replace-main-inner"><div class="replace-head"><div class="replace-title"><span class="replace-kicker">TEXT REPLACEMENT</span><h1 id="r13Title">텍스트 대치</h1><p>입력 문자열을 지정한 결과로 대치합니다.</p></div><div class="replace-head-actions"><button type="button" class="btn replace-mobile-list" id="r13Mobile">${ICONS.list||'☰'}<span class="txt">목록</span></button><button type="button" class="btn" id="r13Dup">복제</button><button type="button" class="btn danger" id="r13Del">삭제</button></div></div><div id="r13Editor"></div></div></section>`;
+  rLayout.innerHTML=`<aside class="replace-sidebar"><div class="replace-side-head"><div class="replace-side-title"><strong>텍스트 대치</strong><button type="button" class="keymap-group-toggle1510" id="r13GroupToggle" title="현재 그룹 활성/비활성">ON</button><span id="r13Count">0</span></div><div class="replace-group-row"><select id="r13Group"></select><button type="button" class="replace-square" id="r13GroupAdd" title="그룹 추가">+</button><button type="button" class="replace-square" id="r13GroupMore" title="그룹 관리">${ICONS.more}</button></div></div><label class="replace-search">${ICONS.search}<input id="r13Search" placeholder="텍스트 대치 검색"></label><div class="bulk-tools"><span class="bulk-label">EXCEL</span><button type="button" id="r13Template">양식 다운로드</button><button type="button" id="r13Import">불러오기</button><input type="file" id="r13File" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></div><div class="replace-rule-head"><span>RULES</span><div class="replace-head-btns"><button type="button" id="r13SortName" title="메모(이름)순 정렬">이름순</button><button type="button" id="r13Add">+ 새 규칙</button></div></div><div class="replace-list" id="r13List"></div><div class="replace-sidebar-foot"><span>2.0</span><span>Excel ready</span></div></aside><section class="replace-main"><div class="replace-main-inner"><div class="replace-head"><div class="replace-title"><span class="replace-kicker">TEXT REPLACEMENT</span><h1 id="r13Title">텍스트 대치</h1><p>입력 문자열을 지정한 결과로 대치합니다.</p></div><div class="replace-head-actions"><button type="button" class="btn replace-mobile-list" id="r13Mobile">${ICONS.list||'☰'}<span class="txt">목록</span></button><button type="button" class="btn" id="r13Dup">복제</button><button type="button" class="btn danger" id="r13Del">삭제</button></div></div><div id="r13Editor"></div></div></section>`;
   function rGroup(){ensure13();return state.replaceGroups.find(g=>g.id===ux.replaceGroupId)||state.replaceGroups[0]}
   function rRule(){const g=rGroup();return g?.rules?.find(r=>r.id===ux.replaceRuleId)||g?.rules?.[0]||null}
   function rNormalize(){ensure13();const g=rGroup();ux.replaceGroupId=g?.id||'';if(g&&!g.rules.some(r=>r.id===ux.replaceRuleId))ux.replaceRuleId=g.rules[0]?.id||''}
@@ -3746,11 +3761,13 @@ body.replace-view .replace-layout,body.keymap-view .keymap-layout,body.clipboard
     rNormalize();const g=rGroup(),r=rRule(),q=ux.replaceQuery.trim().toLowerCase();
     if(g&&!g.customOrder&&Array.isArray(g.rules)&&g.rules.length>1){g.rules.sort(rCompare13)}
     $('#r13Count').textContent=state.replaceGroups.reduce((n,x)=>n+x.rules.length,0);
-    $('#r13Group').innerHTML=state.replaceGroups.map(x=>`<option value="${x.id}" ${x.id===g.id?'selected':''}>${esc(x.name)}</option>`).join('');
+    $('#r13Group').innerHTML=state.replaceGroups.map(x=>`<option value="${x.id}" ${x.id===g.id?'selected':''}>${esc(x.name)}${x.enabled===false?' · OFF':''}</option>`).join('');
+    const gt=$('#r13GroupToggle');
+    if(gt&&g){const off=g.enabled===false;gt.textContent=off?'OFF':'ON';gt.classList.toggle('off',off);gt.setAttribute('aria-pressed',off?'false':'true')}
     const sortBtn=$('#r13SortName');
     if(sortBtn){sortBtn.textContent=g?.customOrder?'이름순':'이름순 ✓';sortBtn.classList.toggle('is-sorted',!g?.customOrder)}
     const list=(g.rules||[]).filter(x=>!q||`${x.name} ${x.trigger} ${x.replacement}`.toLowerCase().includes(q));
-    $('#r13List').innerHTML=list.length?list.map(x=>`<div class="replace-item ${x.id===r?.id?'active':''}" data-r13="${x.id}" draggable="true" tabindex="0"><div class="replace-item-main"><strong>${esc(x.trigger||'입력 없음')} → ${esc(x.replacement||'변환값 없음')}</strong>${x.name?`<small>${esc(x.name)}</small>`:''}</div><span class="replace-item-badge">${modeKR(x.mode)}</span></div>`).join(''):`<div class="replace-empty">${q?'검색 결과가 없습니다.':'규칙이 없습니다.'}</div>`;
+    $('#r13List').innerHTML=list.length?list.map(x=>`<div class="replace-item ${x.id===r?.id?'active':''} ${x.enabled===false?'off':''} ${g.enabled===false?'group-off':''}" data-r13="${x.id}" draggable="true" tabindex="0"><div class="replace-item-main"><strong>${esc(x.trigger||'입력 없음')} → ${esc(x.replacement||'변환값 없음')}</strong>${x.name?`<small>${esc(x.name)}</small>`:''}</div><span class="replace-item-badge">${x.enabled===false?'OFF':modeKR(x.mode)}</span></div>`).join(''):`<div class="replace-empty">${q?'검색 결과가 없습니다.':'규칙이 없습니다.'}</div>`;
     $$('#r13List .replace-item').forEach(el=>{
       el.ondragstart=e=>{rDragId13=el.dataset.r13;el.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',rDragId13)};
       el.ondragend=()=>{rDragId13='';el.classList.remove('dragging');$$('#r13List .replace-item.drag-over').forEach(x=>x.classList.remove('drag-over'))};
@@ -3759,8 +3776,10 @@ body.replace-view .replace-layout,body.keymap-view .keymap-layout,body.clipboard
       el.ondrop=e=>{e.preventDefault();el.classList.remove('drag-over');const targetId=el.dataset.r13;if(rDragId13&&targetId&&rDragId13!==targetId)rMoveRule13(g,rDragId13,targetId)};
     });
     $('#r13Title').textContent=r?`${r.trigger||'입력 없음'} → ${r.replacement||'변환값 없음'}`:'텍스트 대치';$('#r13Dup').disabled=!r;$('#r13Del').disabled=!r;
-    const ed=$('#r13Editor');if(!r){ed.innerHTML='<div class="replace-editor"><div class="replace-editor-empty"><strong>텍스트 대치 규칙이 없습니다.</strong>왼쪽에서 새 규칙을 만들어주세요.</div></div>';return}
-    ed.innerHTML=`<section class="replace-editor"><div class="replace-editor-head"><span class="replace-editor-icon">${ICONS.replace}</span><div><strong>${esc(r.trigger||'입력 없음')} → ${esc(r.replacement||'변환값 없음')}</strong><small>${esc(r.name||'메모 없음')} · ${modeKR(r.mode)}</small></div><label class="replace-enabled"><input type="checkbox" id="r13Enabled" ${r.enabled!==false?'checked':''}>사용</label></div><div class="replace-form"><div class="replace-field"><label>메모</label><input class="replace-input" id="r13Memo" value="${esc(r.name||'')}" placeholder="선택 사항"></div><div class="replace-two"><div class="replace-field"><label>입력 문자열</label><input class="replace-input" id="r13Trigger" value="${esc(r.trigger||'')}"></div><div class="replace-field"><label>변환 결과</label><input class="replace-input" id="r13Result" value="${esc(r.replacement||'')}"></div></div><div class="replace-two"><div class="replace-field"><label>입력 모드</label><select class="replace-select" id="r13Mode"><option value="all" ${r.mode==='all'?'selected':''}>All</option><option value="ko" ${r.mode==='ko'?'selected':''}>한글</option><option value="en" ${r.mode==='en'?'selected':''}>영어</option></select></div><div class="replace-field"><label>대소문자</label><select class="replace-select" id="r13Case"><option value="0" ${!r.caseSensitive?'selected':''}>구분 안 함</option><option value="1" ${r.caseSensitive?'selected':''}>구분</option></select></div></div><div class="replace-two"><div class="replace-field"><label>변환 시점</label><select class="replace-select" id="r13SpaceTrigger"><option value="0" ${!r.triggerOnSpace?'selected':''}>즉시 변환</option><option value="1" ${r.triggerOnSpace?'selected':''}>Space 입력 후 변환</option></select></div><div class="replace-field"><label>변환 후 공백</label><select class="replace-select" id="r13KeepSpace" ${r.triggerOnSpace?'':'disabled'}><option value="1" ${r.keepSpace!==false?'selected':''}>공백 포함</option><option value="0" ${r.keepSpace===false?'selected':''}>공백 제외</option></select></div></div><div class="replace-note" id="r13Hint" style="margin:0 0 11px"></div><div class="group-move-row"><label>규칙 그룹</label><select class="replace-select" id="r13Move">${state.replaceGroups.map(x=>`<option value="${x.id}" ${x.id===g.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select></div></div><div class="replace-footer"><span style="font-size:9.5px;color:#98a2b3">Enter 또는 저장 버튼으로 반영됩니다.</span><span class="push"></span><button type="button" class="btn primary" id="r13Save">저장</button></div></section>`;
+    const ed=$('#r13Editor');
+    const groupOffNotice=g&&g.enabled===false?`<div class="replace-note" style="margin:0 0 10px;background:#fff7ed;color:#9a5b13;border:1px solid #fed7aa">현재 「${esc(g.name)}」 그룹이 <b>OFF</b> 상태입니다. 그룹을 ON으로 켜야 이 그룹의 텍스트 대치 규칙이 생성·실행됩니다.</div>`:'';
+    if(!r){ed.innerHTML=`${groupOffNotice}<div class="replace-editor"><div class="replace-editor-empty"><strong>텍스트 대치 규칙이 없습니다.</strong>왼쪽에서 새 규칙을 만들어주세요.</div></div>`;return}
+    ed.innerHTML=`${groupOffNotice}<section class="replace-editor"><div class="replace-editor-head"><span class="replace-editor-icon">${ICONS.replace}</span><div><strong>${esc(r.trigger||'입력 없음')} → ${esc(r.replacement||'변환값 없음')}</strong><small>${esc(r.name||'메모 없음')} · ${modeKR(r.mode)}</small></div><label class="replace-enabled"><input type="checkbox" id="r13Enabled" ${r.enabled!==false?'checked':''}>사용</label></div><div class="replace-form"><div class="replace-field"><label>메모</label><input class="replace-input" id="r13Memo" value="${esc(r.name||'')}" placeholder="선택 사항"></div><div class="replace-two"><div class="replace-field"><label>입력 문자열</label><input class="replace-input" id="r13Trigger" value="${esc(r.trigger||'')}"></div><div class="replace-field"><label>변환 결과</label><input class="replace-input" id="r13Result" value="${esc(r.replacement||'')}"></div></div><div class="replace-two"><div class="replace-field"><label>입력 모드</label><select class="replace-select" id="r13Mode"><option value="all" ${r.mode==='all'?'selected':''}>All</option><option value="ko" ${r.mode==='ko'?'selected':''}>한글</option><option value="en" ${r.mode==='en'?'selected':''}>영어</option></select></div><div class="replace-field"><label>대소문자</label><select class="replace-select" id="r13Case"><option value="0" ${!r.caseSensitive?'selected':''}>구분 안 함</option><option value="1" ${r.caseSensitive?'selected':''}>구분</option></select></div></div><div class="replace-two"><div class="replace-field"><label>변환 시점</label><select class="replace-select" id="r13SpaceTrigger"><option value="0" ${!r.triggerOnSpace?'selected':''}>즉시 변환</option><option value="1" ${r.triggerOnSpace?'selected':''}>Space 입력 후 변환</option></select></div><div class="replace-field"><label>변환 후 공백</label><select class="replace-select" id="r13KeepSpace" ${r.triggerOnSpace?'':'disabled'}><option value="1" ${r.keepSpace!==false?'selected':''}>공백 포함</option><option value="0" ${r.keepSpace===false?'selected':''}>공백 제외</option></select></div></div><div class="replace-note" id="r13Hint" style="margin:0 0 11px"></div><div class="group-move-row"><label>규칙 그룹</label><select class="replace-select" id="r13Move">${state.replaceGroups.map(x=>`<option value="${x.id}" ${x.id===g.id?'selected':''}>${esc(x.name)}${x.enabled===false?' · OFF':''}</option>`).join('')}</select></div></div><div class="replace-footer"><span style="font-size:9.5px;color:#98a2b3">Enter 또는 저장 버튼으로 반영됩니다.</span><span class="push"></span><button type="button" class="btn primary" id="r13Save">저장</button></div></section>`;
     const updateR13Hint=()=>{
       const trig=String($('#r13Trigger').value||'').normalize('NFC'),mode=$('#r13Mode').value,sp=$('#r13SpaceTrigger').value==='1',hint=$('#r13Hint');
       const hasKr=/[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(trig);
@@ -3778,7 +3797,9 @@ body.replace-view .replace-layout,body.keymap-view .keymap-layout,body.clipboard
     ['#r13Memo','#r13Trigger','#r13Result'].forEach(sel=>{const el=$(sel);if(el)el.onkeydown=e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();saveR13()}}});
   }
   function showR13(){hideAll13();rLayout.hidden=false;document.body.classList.add('replace-view');status13('replaceNavBtn','텍스트 대치',rGroup()?.name||'',`규칙 ${state.replaceGroups.reduce((n,g)=>n+g.rules.length,0)}`);renderR13()}
-  $('#r13Group').onchange=e=>{ux.replaceGroupId=e.target.value;ux.replaceRuleId='';renderR13()};$('#r13GroupAdd').onclick=()=>openName13({title:'새 텍스트 대치 그룹',value:'새 그룹',onApply:name=>{commit(()=>{const g={id:uid('rgrp'),name,rules:[]};state.replaceGroups.push(g);ux.replaceGroupId=g.id;ux.replaceRuleId=''},{render:false});renderR13()}});
+  $('#r13Group').onchange=e=>{ux.replaceGroupId=e.target.value;ux.replaceRuleId='';renderR13()};
+  $('#r13GroupToggle').onclick=()=>{const g=rGroup();if(!g)return;const next=g.enabled===false;commit(()=>{g.enabled=next},{render:false});markSaving();renderR13();toast(next?`「${g.name}」 그룹을 사용합니다.`:`「${g.name}」 그룹을 비활성화했습니다.`,next?'good':'')};
+  $('#r13GroupAdd').onclick=()=>openName13({title:'새 텍스트 대치 그룹',value:'새 그룹',onApply:name=>{commit(()=>{const g={id:uid('rgrp'),name,enabled:true,rules:[]};state.replaceGroups.push(g);ux.replaceGroupId=g.id;ux.replaceRuleId=''},{render:false});renderR13()}});
   $('#r13GroupMore').onclick=()=>{const g=rGroup();openGroupManager13({title:'텍스트 대치 그룹 관리',group:g,countLabel:`규칙 ${g.rules.length}개`,canDelete:state.replaceGroups.length>1,onRename:name=>{commit(()=>g.name=name,{render:false});renderR13()},onDelete:()=>{if(confirm(`「${g.name}」 그룹과 규칙을 삭제할까요?`)){commit(()=>{state.replaceGroups=state.replaceGroups.filter(x=>x.id!==g.id);ux.replaceGroupId=state.replaceGroups[0].id;ux.replaceRuleId=''},{render:false});renderR13()}}})};
   $('#r13SortName').onclick=()=>{const g=rGroup();if(!g)return;commit(()=>{g.rules.sort(rCompare13);g.customOrder=false},{render:false});markSaving();renderR13();toast('이름순으로 정렬했습니다.','good')};
   $('#r13Search').oninput=e=>{ux.replaceQuery=e.target.value;renderR13()};$('#r13Add').onclick=()=>{const g=rGroup(),r=rFresh();commit(()=>g.rules.push(r),{render:false});ux.replaceRuleId=r.id;renderR13()};$('#r13Dup').onclick=()=>{const g=rGroup(),r=rRule();if(!r)return;const liveMemo=$('#r13Memo')?$('#r13Memo').value.trim():(r.name||'');const cp={...clone(r),name:liveMemo?`${liveMemo} 복사본`:'',trigger:$('#r13Trigger')?$('#r13Trigger').value:(r.trigger||''),replacement:$('#r13Result')?$('#r13Result').value:(r.replacement||''),mode:$('#r13Mode')?$('#r13Mode').value:(r.mode||'all'),caseSensitive:$('#r13Case')?$('#r13Case').value==='1':!!r.caseSensitive,triggerOnSpace:$('#r13SpaceTrigger')?$('#r13SpaceTrigger').value==='1':!!r.triggerOnSpace,keepSpace:$('#r13KeepSpace')?$('#r13KeepSpace').value==='1':r.keepSpace!==false,enabled:$('#r13Enabled')?$('#r13Enabled').checked:r.enabled!==false,id:uid('rule')};commit(()=>g.rules.splice(g.rules.indexOf(r)+1,0,cp),{render:false});ux.replaceRuleId=cp.id;renderR13();toast('텍스트 대치 규칙을 복제했습니다.','good')};$('#r13Del').onclick=()=>{const g=rGroup(),r=rRule();if(r&&confirm('이 텍스트 대치 규칙을 삭제할까요?')){commit(()=>g.rules=g.rules.filter(x=>x.id!==r.id),{render:false});ux.replaceRuleId='';renderR13()}};
@@ -3808,7 +3829,7 @@ body.replace-view .replace-layout,body.keymap-view .keymap-layout,body.clipboard
 
   /* ---------- CLIPBOARD SLOTS ---------- */
   const cLayout=$('#clipboardLayout');cLayout.className='clipboard-layout clip13';
-  cLayout.innerHTML=`<aside class="clip13-sidebar"><div class="clip13-side-head"><div class="clip13-side-title"><strong>클립보드 슬롯</strong><span class="clip13-count" id="c13Count">0</span></div><div class="clip13-group-row"><select id="c13Group"></select><button type="button" class="clip13-square" id="c13GroupAdd" title="그룹 추가">+</button><button type="button" class="clip13-square" id="c13GroupMore" title="그룹 관리">${ICONS.more}</button></div></div><label class="clip13-search">${ICONS.search}<input id="c13Search" placeholder="슬롯 검색"></label><div class="clip13-rule-head"><span>SLOTS</span><button type="button" id="c13Add">+ 새 슬롯</button></div><div class="clip13-list" id="c13List"></div><div class="clip13-foot"><span>2.0</span><span>Slots + Transform</span></div></aside><section class="clip13-main"><div class="clip13-main-inner"><div class="clip13-head"><div class="clip13-title"><span class="kicker">CLIPBOARD SLOTS</span><h1 id="c13Title">클립보드 슬롯</h1><p>값 보관, 단축키, 변환 규칙을 슬롯 하나에서 관리합니다.</p></div><div class="clip13-actions"><button type="button" class="btn clip13-mobile" id="c13Mobile"><span class="txt">목록</span></button><button type="button" class="btn" id="c13Batch">일괄 생성·수정</button><button type="button" class="btn" id="c13Dup">복제</button><button type="button" class="btn danger" id="c13Del">삭제</button></div></div><div id="c13Editor"></div></div></section>`;
+  cLayout.innerHTML=`<aside class="clip13-sidebar"><div class="clip13-side-head"><div class="clip13-side-title"><strong>클립보드 슬롯</strong><button type="button" class="keymap-group-toggle1510" id="c13GroupToggle" title="현재 그룹 활성/비활성">ON</button><span class="clip13-count" id="c13Count">0</span></div><div class="clip13-group-row"><select id="c13Group"></select><button type="button" class="clip13-square" id="c13GroupAdd" title="그룹 추가">+</button><button type="button" class="clip13-square" id="c13GroupMore" title="그룹 관리">${ICONS.more}</button></div></div><label class="clip13-search">${ICONS.search}<input id="c13Search" placeholder="슬롯 검색"></label><div class="clip13-rule-head"><span>SLOTS</span><button type="button" id="c13Add">+ 새 슬롯</button></div><div class="clip13-list" id="c13List"></div><div class="clip13-foot"><span>2.0</span><span>Slots + Transform</span></div></aside><section class="clip13-main"><div class="clip13-main-inner"><div class="clip13-head"><div class="clip13-title"><span class="kicker">CLIPBOARD SLOTS</span><h1 id="c13Title">클립보드 슬롯</h1><p>값 보관, 단축키, 변환 규칙을 슬롯 하나에서 관리합니다.</p></div><div class="clip13-actions"><button type="button" class="btn clip13-mobile" id="c13Mobile"><span class="txt">목록</span></button><button type="button" class="btn" id="c13Batch">일괄 생성·수정</button><button type="button" class="btn" id="c13Dup">복제</button><button type="button" class="btn danger" id="c13Del">삭제</button></div></div><div id="c13Editor"></div></div></section>`;
   const T_LABEL={
     none:'변환 없음',
     remove:'문자 삭제',
@@ -3823,7 +3844,7 @@ body.replace-view .replace-layout,body.keymap-view .keymap-layout,body.clipboard
   function cFresh(n=1){return{id:uid('cslot'),name:`슬롯 ${n}`,enabled:true,copy:EMPTY(),paste:EMPTY(),rich:true,trim:false,removeLineBreaks:false,transformSource:'slot',transform:{mode:'none',extra:'',replacement:''}}}
   function clipConflict13(h,except=''){const c=findHotkeyConflict(h,except);return c?`${c.g.name} / ${c.a.name}`:null}
   function transformFields13(s){const t=s.transform||{mode:'none',extra:'',replacement:''};let extra='';if(t.mode==='remove')extra=`<div class="clip13-field wide"><label>삭제할 문자</label><input id="c13Extra" value="${esc(t.extra||'')}" placeholder="예: -"></div>`;else if(t.mode==='join')extra=`<div class="clip13-field wide"><label>줄바꿈을 바꿀 내용</label><input id="c13Extra" value="${esc(t.extra??' ')}" placeholder="예: 공백, /, ·"></div>`;else if(t.mode==='replace')extra=`<div class="clip13-field"><label>찾을 내용</label><input id="c13Extra" value="${esc(t.extra||'')}"></div><div class="clip13-field"><label>바꿀 내용</label><input id="c13Replacement" value="${esc(t.replacement||'')}"></div>`;return extra}
-  function renderC13(){cNorm();const g=cGroup(),s=cSlot(),q=ux.clipQuery.trim().toLowerCase();const total=state.clipboardGroups.reduce((n,x)=>n+x.slots.length,0);$('#c13Count').textContent=total;$('#c13Group').innerHTML=state.clipboardGroups.map(x=>`<option value="${x.id}" ${x.id===g.id?'selected':''}>${esc(x.name)}</option>`).join('');const list=g.slots.filter(x=>!q||`${x.name} ${formatHotkey(x.copy)} ${formatHotkey(x.paste)} ${T_LABEL[x.transform?.mode]||''}`.toLowerCase().includes(q)).slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ko',{numeric:true,sensitivity:'base'}));$('#c13List').innerHTML=list.length?list.map(x=>`<button type="button" class="clip13-item ${x.id===s?.id?'active':''} ${x.enabled===false?'off':''}" data-c13="${x.id}"><span class="clip13-item-icon">${ICONS.clip}</span><span class="clip13-item-main"><strong>${esc(x.name)}</strong><small>${esc(T_LABEL[x.transform?.mode||'none'])} · ${esc(formatHotkey(x.paste))}</small></span><span class="clip13-badge">${x.enabled===false?'OFF':'ON'}</span></button>`).join(''):`<div class="clip13-empty"><strong>슬롯이 없습니다.</strong>새 슬롯을 만들어 시작하세요.</div>`;$('#c13Title').textContent=s?.name||'클립보드 슬롯';$('#c13Dup').disabled=!s;$('#c13Del').disabled=!s;const ed=$('#c13Editor');if(!s){ed.innerHTML='<div class="clip13-empty"><strong>클립보드 슬롯이 없습니다.</strong>왼쪽에서 새 슬롯을 만들어주세요.</div>';return}const cc=s.enabled===false?'':clipConflict13(s.copy,`${s.id}:copy`),pc=s.enabled===false?'':clipConflict13(s.paste,`${s.id}:paste`),t=s.transform||{mode:'none',extra:'',replacement:''};ed.innerHTML=`<div class="clip13-editor"><section class="clip13-card clip13-hero"><span class="clip13-hero-icon">${ICONS.clip}</span><div class="clip13-hero-copy"><strong>${esc(s.name)}</strong><small>${esc(T_LABEL[t.mode]||'변환 없음')} · ${esc(g.name)}</small></div><label class="clip13-switch"><input type="checkbox" id="c13Enabled" ${s.enabled!==false?'checked':''}>활성</label></section><section class="clip13-card"><div class="clip13-card-title">기본 설정</div><div class="clip13-grid"><div class="clip13-field wide"><label>슬롯 이름</label><input id="c13Name" value="${esc(s.name)}"></div><div class="clip13-field"><label>복사 단축키</label><button type="button" class="clip13-hotkey" id="c13Copy">${ICONS.keyboard}<span>${esc(formatHotkey(s.copy))}</span><small>설정</small></button></div><div class="clip13-field"><label>붙여넣기 단축키</label><button type="button" class="clip13-hotkey" id="c13Paste">${ICONS.keyboard}<span>${esc(formatHotkey(s.paste))}</span><small>설정</small></button></div></div>${cc||pc?`<div class="clip13-note" style="margin-top:10px;background:#fff7ed;color:#9a5b13">${esc(cc||pc)}</div>`:''}<div class="clip13-options"><label><input type="checkbox" id="c13Rich" ${s.rich!==false?'checked':''}>서식 유지</label><label><input type="checkbox" id="c13Trim" ${s.trim?'checked':''}>복사 시 양끝 공백 제거</label><label><input type="checkbox" id="c13RemoveLineBreaks" ${s.removeLineBreaks?'checked':''}>복사 시 줄바꿈 제거</label></div><div class="clip13-integrated-transform"><div class="clip13-card-title">변환 규칙</div><div class="clip13-grid"><div class="clip13-field"><label>변환 방식</label><select id="c13Mode">${Object.entries(T_LABEL).map(([v,l])=>`<option value="${v}" ${t.mode===v?'selected':''}>${esc(l)}</option>`).join('')}</select></div><div class="clip13-field"><label>변환 대상</label><select id="c13Source" ${!s.copy?.key?'disabled':''}><option value="slot" ${s.copy?.key&&s.transformSource!=='clipboard'?'selected':''}>이 슬롯에 저장된 값</option><option value="clipboard" ${!s.copy?.key||s.transformSource==='clipboard'?'selected':''}>현재 Windows 클립보드${!s.copy?.key?' · 자동':''}</option></select></div>${transformFields13(s)}</div><div class="clip13-note" style="margin-top:10px">${!s.copy?.key?'복사 단축키가 없으므로 현재 Windows 클립보드를 가공해 바로 붙여넣습니다.':'붙여넣기 단축키를 실행할 때 선택한 변환 규칙을 적용한 뒤 붙여넣습니다.'}</div></div></section><section class="clip13-card"><div class="clip13-card-title">그룹</div><div class="group-move-row" style="border:0;padding:0;margin:0"><label>슬롯 그룹</label><select id="c13Move">${state.clipboardGroups.map(x=>`<option value="${x.id}" ${x.id===g.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select></div></section><div class="clip13-note" style="margin-top:2px;text-align:right;background:transparent;padding-right:2px">변경사항은 자동 저장됩니다.</div></div>`;
+  function renderC13(){cNorm();const g=cGroup(),s=cSlot(),q=ux.clipQuery.trim().toLowerCase();const total=state.clipboardGroups.reduce((n,x)=>n+x.slots.length,0);$('#c13Count').textContent=total;$('#c13Group').innerHTML=state.clipboardGroups.map(x=>`<option value="${x.id}" ${x.id===g.id?'selected':''}>${esc(x.name)}${x.enabled===false?' · OFF':''}</option>`).join('');const gt=$('#c13GroupToggle');if(gt&&g){const off=g.enabled===false;gt.textContent=off?'OFF':'ON';gt.classList.toggle('off',off);gt.setAttribute('aria-pressed',off?'false':'true')}const list=g.slots.filter(x=>!q||`${x.name} ${formatHotkey(x.copy)} ${formatHotkey(x.paste)} ${T_LABEL[x.transform?.mode]||''}`.toLowerCase().includes(q)).slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ko',{numeric:true,sensitivity:'base'}));$('#c13List').innerHTML=list.length?list.map(x=>`<button type="button" class="clip13-item ${x.id===s?.id?'active':''} ${x.enabled===false?'off':''} ${g.enabled===false?'group-off':''}" data-c13="${x.id}"><span class="clip13-item-icon">${ICONS.clip}</span><span class="clip13-item-main"><strong>${esc(x.name)}</strong><small>${esc(T_LABEL[x.transform?.mode||'none'])} · ${esc(formatHotkey(x.paste))}</small></span><span class="clip13-badge">${x.enabled===false?'OFF':'ON'}</span></button>`).join(''):`<div class="clip13-empty"><strong>슬롯이 없습니다.</strong>새 슬롯을 만들어 시작하세요.</div>`;$('#c13Title').textContent=s?.name||'클립보드 슬롯';$('#c13Dup').disabled=!s;$('#c13Del').disabled=!s;const ed=$('#c13Editor');const groupOffNotice=g&&g.enabled===false?`<div class="clip13-note" style="margin-bottom:10px;background:#fff7ed;color:#9a5b13;border:1px solid #fed7aa">현재 「${esc(g.name)}」 그룹이 <b>OFF</b> 상태입니다. 그룹을 ON으로 켜야 이 그룹의 클립보드 슬롯 단축키가 생성·실행됩니다.</div>`:'';if(!s){ed.innerHTML=`${groupOffNotice}<div class="clip13-empty"><strong>클립보드 슬롯이 없습니다.</strong>왼쪽에서 새 슬롯을 만들어주세요.</div>`;return}const cc=s.enabled===false||g.enabled===false?'':clipConflict13(s.copy,`${s.id}:copy`),pc=s.enabled===false||g.enabled===false?'':clipConflict13(s.paste,`${s.id}:paste`),t=s.transform||{mode:'none',extra:'',replacement:''};ed.innerHTML=`<div class="clip13-editor">${groupOffNotice}<section class="clip13-card clip13-hero"><span class="clip13-hero-icon">${ICONS.clip}</span><div class="clip13-hero-copy"><strong>${esc(s.name)}</strong><small>${esc(T_LABEL[t.mode]||'변환 없음')} · ${esc(g.name)}</small></div><label class="clip13-switch"><input type="checkbox" id="c13Enabled" ${s.enabled!==false?'checked':''}>활성</label></section><section class="clip13-card"><div class="clip13-card-title">기본 설정</div><div class="clip13-grid"><div class="clip13-field wide"><label>슬롯 이름</label><input id="c13Name" value="${esc(s.name)}"></div><div class="clip13-field"><label>복사 단축키</label><button type="button" class="clip13-hotkey" id="c13Copy">${ICONS.keyboard}<span>${esc(formatHotkey(s.copy))}</span><small>설정</small></button></div><div class="clip13-field"><label>붙여넣기 단축키</label><button type="button" class="clip13-hotkey" id="c13Paste">${ICONS.keyboard}<span>${esc(formatHotkey(s.paste))}</span><small>설정</small></button></div></div>${cc||pc?`<div class="clip13-note" style="margin-top:10px;background:#fff7ed;color:#9a5b13">${esc(cc||pc)}</div>`:''}<div class="clip13-options"><label><input type="checkbox" id="c13Rich" ${s.rich!==false?'checked':''}>서식 유지</label><label><input type="checkbox" id="c13Trim" ${s.trim?'checked':''}>복사 시 양끝 공백 제거</label><label><input type="checkbox" id="c13RemoveLineBreaks" ${s.removeLineBreaks?'checked':''}>복사 시 줄바꿈 제거</label></div><div class="clip13-integrated-transform"><div class="clip13-card-title">변환 규칙</div><div class="clip13-grid"><div class="clip13-field"><label>변환 방식</label><select id="c13Mode">${Object.entries(T_LABEL).map(([v,l])=>`<option value="${v}" ${t.mode===v?'selected':''}>${esc(l)}</option>`).join('')}</select></div><div class="clip13-field"><label>변환 대상</label><select id="c13Source" ${!s.copy?.key?'disabled':''}><option value="slot" ${s.copy?.key&&s.transformSource!=='clipboard'?'selected':''}>이 슬롯에 저장된 값</option><option value="clipboard" ${!s.copy?.key||s.transformSource==='clipboard'?'selected':''}>현재 Windows 클립보드${!s.copy?.key?' · 자동':''}</option></select></div>${transformFields13(s)}</div><div class="clip13-note" style="margin-top:10px">${!s.copy?.key?'복사 단축키가 없으므로 현재 Windows 클립보드를 가공해 바로 붙여넣습니다.':'붙여넣기 단축키를 실행할 때 선택한 변환 규칙을 적용한 뒤 붙여넣습니다.'}</div></div></section><section class="clip13-card"><div class="clip13-card-title">그룹</div><div class="group-move-row" style="border:0;padding:0;margin:0"><label>슬롯 그룹</label><select id="c13Move">${state.clipboardGroups.map(x=>`<option value="${x.id}" ${x.id===g.id?'selected':''}>${esc(x.name)}${x.enabled===false?' · OFF':''}</option>`).join('')}</select></div></section><div class="clip13-note" style="margin-top:2px;text-align:right;background:transparent;padding-right:2px">변경사항은 자동 저장됩니다.</div></div>`;
     $('#c13Copy').onclick=()=>openHotkeyEditor({title:`${s.name} · 복사 단축키`,value:s.copy,exceptAutoId:`${s.id}:copy`,onApply:v=>{commit(()=>{s.copy=v;syncClipboard13()},{render:false});renderC13()}});$('#c13Paste').onclick=()=>openHotkeyEditor({title:`${s.name} · 붙여넣기 단축키`,value:s.paste,exceptAutoId:`${s.id}:paste`,onApply:v=>{commit(()=>{s.paste=v;syncClipboard13()},{render:false});renderC13()}});
     const saveC13Patch=(patch,{redraw=false}={})=>{
       commit(()=>{Object.assign(s,patch);syncClipboard13()},{render:false});
@@ -3843,7 +3864,7 @@ body.replace-view .replace-layout,body.keymap-view .keymap-layout,body.clipboard
     $('#c13Extra')?.addEventListener('change',()=>saveC13Patch(textPatch()));
     $('#c13Replacement')?.addEventListener('change',()=>saveC13Patch(textPatch()));
 
-    $('#c13Enabled').onchange=()=>saveC13Patch({enabled:$('#c13Enabled').checked});
+    $('#c13Enabled').onchange=()=>saveC13Patch({enabled:$('#c13Enabled').checked},{redraw:true});
     $('#c13Rich').onchange=()=>saveC13Patch({rich:$('#c13Rich').checked});
     $('#c13Trim').onchange=()=>saveC13Patch({trim:$('#c13Trim').checked});
     $('#c13RemoveLineBreaks').onchange=()=>saveC13Patch({removeLineBreaks:$('#c13RemoveLineBreaks').checked});
@@ -3886,7 +3907,9 @@ body.replace-view .replace-layout,body.keymap-view .keymap-layout,body.clipboard
     };
   }
   function showC13(){hideAll13();cLayout.hidden=false;document.body.classList.add('clipboard-view');status13('clipboardNavBtn','클립보드 슬롯',cGroup()?.name||'',`슬롯 ${state.clipboardGroups.reduce((n,g)=>n+g.slots.length,0)}`);renderC13()}
-  $('#c13Group').onchange=e=>{ux.clipGroupId=e.target.value;ux.clipSlotId='';renderC13()};$('#c13GroupAdd').onclick=()=>openName13({title:'새 클립보드 슬롯 그룹',value:'새 그룹',onApply:name=>{commit(()=>{const g={id:uid('cgrp'),name,slots:[]};state.clipboardGroups.push(g);ux.clipGroupId=g.id;ux.clipSlotId='';syncClipboard13()},{render:false});renderC13()}});
+  $('#c13Group').onchange=e=>{ux.clipGroupId=e.target.value;ux.clipSlotId='';renderC13()};
+  $('#c13GroupToggle').onclick=()=>{const g=cGroup();if(!g)return;const next=g.enabled===false;commit(()=>{g.enabled=next},{render:false});markSaving();renderC13();toast(next?`「${g.name}」 그룹을 사용합니다.`:`「${g.name}」 그룹을 비활성화했습니다.`,next?'good':'')};
+  $('#c13GroupAdd').onclick=()=>openName13({title:'새 클립보드 슬롯 그룹',value:'새 그룹',onApply:name=>{commit(()=>{const g={id:uid('cgrp'),name,enabled:true,slots:[]};state.clipboardGroups.push(g);ux.clipGroupId=g.id;ux.clipSlotId='';syncClipboard13()},{render:false});renderC13()}});
   $('#c13GroupMore').onclick=()=>{const g=cGroup();openGroupManager13({title:'클립보드 슬롯 그룹 관리',group:g,countLabel:`슬롯 ${g.slots.length}개`,canDelete:state.clipboardGroups.length>1,onRename:name=>{commit(()=>g.name=name,{render:false});renderC13()},onDelete:()=>{if(confirm(`「${g.name}」 그룹을 삭제할까요? 슬롯도 함께 삭제됩니다.`)){commit(()=>{state.clipboardGroups=state.clipboardGroups.filter(x=>x.id!==g.id);ux.clipGroupId=state.clipboardGroups[0].id;ux.clipSlotId='';syncClipboard13()},{render:false});renderC13()}}})};
   $('#c13Search').oninput=e=>{ux.clipQuery=e.target.value;renderC13()};$('#c13Add').onclick=()=>{const g=cGroup(),s=cFresh(g.slots.length+1);commit(()=>{g.slots.push(s);syncClipboard13()},{render:false});ux.clipSlotId=s.id;renderC13()};$('#c13Dup').onclick=()=>{const g=cGroup(),s=cSlot();if(!s)return;const liveName=$('#c13Name')?$('#c13Name').value.trim():s.name;const cp={...clone(s),id:uid('cslot'),name:(liveName||s.name)+' 복사본',enabled:$('#c13Enabled')?$('#c13Enabled').checked:s.enabled!==false,rich:$('#c13Rich')?$('#c13Rich').checked:s.rich!==false,trim:$('#c13Trim')?$('#c13Trim').checked:!!s.trim,removeLineBreaks:$('#c13RemoveLineBreaks')?$('#c13RemoveLineBreaks').checked:!!s.removeLineBreaks,transformSource:$('#c13Source')&&!$('#c13Source').disabled?$('#c13Source').value:(s.transformSource||'slot'),transform:{...(clone(s.transform||{mode:'none',extra:'',replacement:''})),mode:$('#c13Mode')?$('#c13Mode').value:(s.transform?.mode||'none'),extra:$('#c13Extra')?$('#c13Extra').value:(s.transform?.extra??''),replacement:$('#c13Replacement')?$('#c13Replacement').value:(s.transform?.replacement??'')}};commit(()=>{g.slots.splice(g.slots.indexOf(s)+1,0,cp);syncClipboard13()},{render:false});ux.clipSlotId=cp.id;renderC13();toast('클립보드 슬롯을 복제했습니다.','good')};$('#c13Del').onclick=()=>{const g=cGroup(),s=cSlot();if(s&&confirm(`「${s.name}」 슬롯을 삭제할까요?`)){commit(()=>{g.slots=g.slots.filter(x=>x.id!==s.id);syncClipboard13()},{render:false});ux.clipSlotId='';renderC13()}};
   $('#c13List').onclick=e=>{const x=e.target.closest('[data-c13]');if(x){ux.clipSlotId=x.dataset.c13;renderC13();cLayout.classList.remove('list-open')}};$('#c13Mobile').onclick=()=>cLayout.classList.toggle('list-open');
@@ -4359,11 +4382,12 @@ W_CleanTitle(title) {
     }
     if(!Array.isArray(state.windowSlotGroups)||!state.windowSlotGroups.length){
       const legacy=Array.isArray(state.windowSlots)&&state.windowSlots.length?clone(state.windowSlots):[{id:uid('wslot'),name:'창 슬롯 1',memo:'',enabled:true,remember:EMPTY14(),recall:EMPTY14()}];
-      state.windowSlotGroups=[{id:uid('wgrp'),name:'기본',slots:legacy}];
+      state.windowSlotGroups=[{id:uid('wgrp'),name:'기본',enabled:true,slots:legacy}];
     }
     for(const g of state.windowSlotGroups){
       if(!g.id)g.id=uid('wgrp');
       if(typeof g.name!=='string'||!g.name.trim())g.name='기본';
+      if(typeof g.enabled!=='boolean')g.enabled=true;
       if(!Array.isArray(g.slots))g.slots=[];
       for(const ws of g.slots){
         if(!ws.id)ws.id=uid('wslot');
@@ -4409,10 +4433,10 @@ W_CleanTitle(title) {
       const a=currentAuto();if(a&&a.enabled!==false)add(a.id,'자동화',a.name,a.shortcut);
       return out;
     }
-    for(const g of state.groups||[])for(const a of g.automations||[])if(a.enabled!==false)add(a.id,'자동화',`${g.name} / ${a.name}`,a.shortcut);
+    for(const g of state.groups||[])if(g.enabled!==false)for(const a of g.automations||[])if(a.enabled!==false)add(a.id,'자동화',`${g.name} / ${a.name}`,a.shortcut);
     for(const g of state.keymapGroups||[])if(g.enabled!==false)for(const r of g.rules||[])if(r.enabled!==false)add(r.id,'키매핑',`${g.name} / ${r.name||formatHotkey(r.input)}`,r.input);
-    for(const g of state.clipboardGroups||[])for(const sl of g.slots||[])if(sl.enabled!==false){add(sl.id+':copy','클립보드 슬롯',`${sl.name} · 복사`,sl.copy);add(sl.id+':paste','클립보드 슬롯',`${sl.name} · 붙여넣기`,sl.paste)}
-    for(const g of state.windowSlotGroups||[])for(const ws of g.slots||[])if(ws.enabled!==false){add(ws.id+':remember','창버튼',`${ws.name||'창 슬롯'} · 창기억`,ws.remember);add(ws.id+':recall','창버튼',`${ws.name||'창 슬롯'} · 창리콜`,ws.recall)}
+    for(const g of state.clipboardGroups||[])if(g.enabled!==false)for(const sl of g.slots||[])if(sl.enabled!==false){add(sl.id+':copy','클립보드 슬롯',`${sl.name} · 복사`,sl.copy);add(sl.id+':paste','클립보드 슬롯',`${sl.name} · 붙여넣기`,sl.paste)}
+    for(const g of state.windowSlotGroups||[])if(g.enabled!==false)for(const ws of g.slots||[])if(ws.enabled!==false){add(ws.id+':remember','창버튼',`${ws.name||'창 슬롯'} · 창기억`,ws.remember);add(ws.id+':recall','창버튼',`${ws.name||'창 슬롯'} · 창리콜`,ws.recall)}
     for(const fg of state.fileJobGroups||[])if(fg.enabled!==false)for(const j of fg.jobs||[])if(j.enabled!==false)add(j.id,'파일작업',`${fg.name} / ${j.name||'파일작업'}`,j.shortcut);
     return out;
   }
@@ -4550,7 +4574,7 @@ W_CleanTitle(title) {
   function wuFresh(n=1){return{id:uid('wslot'),name:`창 슬롯 ${n}`,memo:'',enabled:true,remember:EMPTY14(),recall:EMPTY14()}}
   function wuConflict(h,except){const c=conflictEntry14(h,except);return c?`${c.section} / ${c.name}`:''}
   if(winUtilLayout){
-    winUtilLayout.innerHTML=`<aside class="clip13-sidebar"><div class="clip13-side-head"><div class="clip13-side-title"><strong>창버튼</strong><span class="clip13-count" id="wu14Count">0</span></div><div class="clip13-group-row"><select id="wu14Group"></select><button type="button" class="clip13-square" id="wu14GroupAdd" title="그룹 추가">+</button><button type="button" class="clip13-square" id="wu14GroupMore" title="그룹 관리">${ICONS.more}</button></div></div><label class="clip13-search">${ICONS.search}<input id="wu14Search" placeholder="슬롯 검색"></label><div class="clip13-rule-head"><span>SLOTS</span><button type="button" id="wu14Add">+ 새 슬롯</button></div><div class="clip13-list" id="wu14List"></div><div class="clip13-foot"><span>2.0</span><span>Remember → Recall</span></div></aside><section class="clip13-main"><div class="clip13-main-inner"><div class="clip13-head"><div class="clip13-title"><span class="kicker">WINDOW BUTTONS</span><h1 id="wu14Title">창버튼</h1><p>창기억 단축키로 현재 활성 창을 저장하고, 창리콜 단축키로 언제든 맨 앞으로 활성화합니다.</p></div><div class="clip13-actions"><button type="button" class="btn clip13-mobile" id="wu14Mobile"><span class="txt">목록</span></button><button type="button" class="btn" id="wu14Batch">일괄 생성·수정</button><button type="button" class="btn" id="wu14Dup">복제</button><button type="button" class="btn danger" id="wu14Del">삭제</button></div></div><div id="wu14Editor"></div></div></section>`;
+    winUtilLayout.innerHTML=`<aside class="clip13-sidebar"><div class="clip13-side-head"><div class="clip13-side-title"><strong>창버튼</strong><button type="button" class="keymap-group-toggle1510" id="wu14GroupToggle" title="현재 그룹 활성/비활성">ON</button><span class="clip13-count" id="wu14Count">0</span></div><div class="clip13-group-row"><select id="wu14Group"></select><button type="button" class="clip13-square" id="wu14GroupAdd" title="그룹 추가">+</button><button type="button" class="clip13-square" id="wu14GroupMore" title="그룹 관리">${ICONS.more}</button></div></div><label class="clip13-search">${ICONS.search}<input id="wu14Search" placeholder="슬롯 검색"></label><div class="clip13-rule-head"><span>SLOTS</span><button type="button" id="wu14Add">+ 새 슬롯</button></div><div class="clip13-list" id="wu14List"></div><div class="clip13-foot"><span>2.0</span><span>Remember → Recall</span></div></aside><section class="clip13-main"><div class="clip13-main-inner"><div class="clip13-head"><div class="clip13-title"><span class="kicker">WINDOW BUTTONS</span><h1 id="wu14Title">창버튼</h1><p>창기억 단축키로 현재 활성 창을 저장하고, 창리콜 단축키로 언제든 맨 앞으로 활성화합니다.</p></div><div class="clip13-actions"><button type="button" class="btn clip13-mobile" id="wu14Mobile"><span class="txt">목록</span></button><button type="button" class="btn" id="wu14Batch">일괄 생성·수정</button><button type="button" class="btn" id="wu14Dup">복제</button><button type="button" class="btn danger" id="wu14Del">삭제</button></div></div><div id="wu14Editor"></div></div></section>`;
   }
   function renderWinUtil14(){
     if(!winUtilLayout)return;
@@ -4558,26 +4582,30 @@ W_CleanTitle(title) {
     const g=wuGroup(),s=wuSlot(),q=wuState.query.trim().toLowerCase();
     const total=state.windowSlotGroups.reduce((n,x)=>n+(x.slots?.length||0),0);
     $('#wu14Count').textContent=total;
-    $('#wu14Group').innerHTML=state.windowSlotGroups.map(x=>`<option value="${x.id}" ${x.id===g.id?'selected':''}>${esc(x.name)}</option>`).join('');
+    $('#wu14Group').innerHTML=state.windowSlotGroups.map(x=>`<option value="${x.id}" ${x.id===g.id?'selected':''}>${esc(x.name)}${x.enabled===false?' · OFF':''}</option>`).join('');
+    const gt=$('#wu14GroupToggle');
+    if(gt&&g){const off=g.enabled===false;gt.textContent=off?'OFF':'ON';gt.classList.toggle('off',off);gt.setAttribute('aria-pressed',off?'false':'true')}
     const list=(g?.slots||[]).filter(x=>!q||`${x.name} ${x.memo||''} ${formatHotkey(x.remember)} ${formatHotkey(x.recall)}`.toLowerCase().includes(q)).slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ko',{numeric:true,sensitivity:'base'}));
     $('#wu14List').innerHTML=list.length?list.map(x=>{
       const r1=(x.remember?.key||modifierOnlyInfo156(x.remember))?formatHotkey(x.remember):'미지정';
       const r2=(x.recall?.key||modifierOnlyInfo156(x.recall))?formatHotkey(x.recall):'미지정';
-      return `<button type="button" class="clip13-item ${x.id===s?.id?'active':''} ${x.enabled===false?'off':''}" data-wu14="${x.id}"><span class="clip13-item-icon">${WIN_UTIL_ICON}</span><span class="clip13-item-main"><strong>${esc(x.name)}</strong><small>${esc(r1)} → ${esc(r2)}</small></span><span class="clip13-badge">${x.enabled===false?'OFF':'ON'}</span></button>`;
+      return `<button type="button" class="clip13-item ${x.id===s?.id?'active':''} ${x.enabled===false?'off':''} ${g?.enabled===false?'group-off':''}" data-wu14="${x.id}"><span class="clip13-item-icon">${WIN_UTIL_ICON}</span><span class="clip13-item-main"><strong>${esc(x.name)}</strong><small>${esc(r1)} → ${esc(r2)}</small></span><span class="clip13-badge">${x.enabled===false?'OFF':'ON'}</span></button>`;
     }).join(''):`<div class="clip13-empty"><strong>슬롯이 없습니다.</strong>새 슬롯을 만들어 시작하세요.</div>`;
     $('#wu14Title').textContent=s?.name||'창버튼';
     $('#wu14Dup').disabled=!s;
     $('#wu14Del').disabled=!s;
     if(document.body.classList.contains('winutil-view')){$('#crumbGroup').textContent='창버튼';$('#crumbAuto').textContent=g?.name||'';$('#statusGroup').textContent='창버튼';$('#statusAuto').textContent=g?.name||'그룹 없음';$('#statusNodes').textContent=`슬롯 ${total}`}
     const ed=$('#wu14Editor');
-    if(!s){ed.innerHTML='<div class="clip13-empty"><strong>창 슬롯이 없습니다.</strong>왼쪽에서 새 슬롯을 만들거나 상단 「일괄 생성·수정」을 눌러보세요.</div>';return}
+    const groupOffNotice=g&&g.enabled===false?`<div class="clip13-note" style="margin-bottom:10px;background:#fff7ed;color:#9a5b13;border:1px solid #fed7aa">현재 「${esc(g.name)}」 그룹이 <b>OFF</b> 상태입니다. 그룹을 ON으로 켜야 이 그룹의 창버튼 단축키가 생성·실행됩니다.</div>`:'';
+    if(!s){ed.innerHTML=`${groupOffNotice}<div class="clip13-empty"><strong>창 슬롯이 없습니다.</strong>왼쪽에서 새 슬롯을 만들거나 상단 「일괄 생성·수정」을 눌러보세요.</div>`;return}
     const hasRem=Boolean(s.remember?.key||modifierOnlyInfo156(s.remember));
     const hasRec=Boolean(s.recall?.key||modifierOnlyInfo156(s.recall));
     const remTxt=hasRem?formatHotkey(s.remember):'미지정';
     const recTxt=hasRec?formatHotkey(s.recall):'미지정';
-    const rc1=s.enabled===false?'':wuConflict(s.remember,`${s.id}:remember`);
-    const rc2=s.enabled===false?'':wuConflict(s.recall,`${s.id}:recall`);
+    const rc1=s.enabled===false||g.enabled===false?'':wuConflict(s.remember,`${s.id}:remember`);
+    const rc2=s.enabled===false||g.enabled===false?'':wuConflict(s.recall,`${s.id}:recall`);
     ed.innerHTML=`<div class="clip13-editor">
+      ${groupOffNotice}
       <section class="clip13-card clip13-hero"><span class="clip13-hero-icon">${WIN_UTIL_ICON}</span><div class="clip13-hero-copy"><strong>${esc(s.name)}</strong><small>창기억 ${esc(remTxt)} → 창리콜 ${esc(recTxt)} · ${esc(g.name)}</small></div><label class="clip13-switch"><input type="checkbox" id="wu14Enabled" ${s.enabled!==false?'checked':''}>활성</label></section>
       <section class="clip13-card">
         <div class="clip13-card-title">기본 설정</div>
@@ -4607,7 +4635,7 @@ W_CleanTitle(title) {
         ${rc1||rc2?`<div class="clip13-note" style="margin-top:10px;border-color:rgba(248,113,113,.35);color:#f87171">충돌 · ${esc(rc1||rc2)}</div>`:''}
         <div class="clip13-note" style="margin-top:10px">① <b>창기억</b> 단축키를 누르면 현재 활성 창을 이 슬롯에 기억합니다. ② 이후 다른 작업을 하다가 <b>창리콜</b> 단축키를 누르면 기억된 창이 최소화 상태여도 복원되며 맨 앞으로 활성화됩니다. (창고정·창월담은 상단 <b>실행 설정</b>에서 지정)</div>
       </section>
-      <section class="clip13-card"><div class="clip13-card-title">그룹</div><div class="group-move-row" style="border:0;padding:0;margin:0"><label>슬롯 그룹</label><select id="wu14Move">${state.windowSlotGroups.map(x=>`<option value="${x.id}" ${x.id===g.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select></div></section>
+      <section class="clip13-card"><div class="clip13-card-title">그룹</div><div class="group-move-row" style="border:0;padding:0;margin:0"><label>슬롯 그룹</label><select id="wu14Move">${state.windowSlotGroups.map(x=>`<option value="${x.id}" ${x.id===g.id?'selected':''}>${esc(x.name)}${x.enabled===false?' · OFF':''}</option>`).join('')}</select></div></section>
       <div class="clip13-note" style="margin-top:2px;text-align:right;background:transparent;padding-right:2px">변경사항은 자동 저장됩니다.</div>
     </div>`;
     $('#wu14Remember').onclick=()=>openHotkeyEditor({title:`${s.name} · 창기억 단축키`,value:s.remember,exceptAutoId:`${s.id}:remember`,onApply:v=>{commit(()=>{s.remember=v||EMPTY14();syncWinSlots14()},{render:false});markSaving();renderWinUtil14()}});
@@ -4648,7 +4676,8 @@ W_CleanTitle(title) {
   if(winUtilLayout){
     const ui13=()=>window.easy1HK13UI||{};
     $('#wu14Group').onchange=e=>{wuState.groupId=e.target.value;wuState.slotId='';renderWinUtil14()};
-    $('#wu14GroupAdd').onclick=()=>ui13().openName13?.({title:'새 창버튼 그룹',value:'새 그룹',onApply:name=>{commit(()=>{const g={id:uid('wgrp'),name,slots:[]};state.windowSlotGroups.push(g);wuState.groupId=g.id;wuState.slotId='';syncWinSlots14()},{render:false});markSaving();renderWinUtil14()}});
+    $('#wu14GroupToggle').onclick=()=>{const g=wuGroup();if(!g)return;const next=g.enabled===false;commit(()=>{g.enabled=next},{render:false});markSaving();renderWinUtil14();toast(next?`「${g.name}」 그룹을 사용합니다.`:`「${g.name}」 그룹을 비활성화했습니다.`,next?'good':'')};
+    $('#wu14GroupAdd').onclick=()=>ui13().openName13?.({title:'새 창버튼 그룹',value:'새 그룹',onApply:name=>{commit(()=>{const g={id:uid('wgrp'),name,enabled:true,slots:[]};state.windowSlotGroups.push(g);wuState.groupId=g.id;wuState.slotId='';syncWinSlots14()},{render:false});markSaving();renderWinUtil14()}});
     $('#wu14GroupMore').onclick=()=>{const g=wuGroup();ui13().openGroupManager13?.({title:'창버튼 그룹 관리',group:g,countLabel:`슬롯 ${g.slots.length}개`,canDelete:state.windowSlotGroups.length>1,onRename:name=>{commit(()=>{g.name=name},{render:false});markSaving();renderWinUtil14()},onDelete:()=>{if(confirm(`「${g.name}」 그룹을 삭제할까요? 슬롯도 함께 삭제됩니다.`)){commit(()=>{state.windowSlotGroups=state.windowSlotGroups.filter(x=>x.id!==g.id);wuState.groupId=state.windowSlotGroups[0].id;wuState.slotId='';syncWinSlots14()},{render:false});markSaving();renderWinUtil14()}}})};
     $('#wu14Search').oninput=e=>{wuState.query=e.target.value;renderWinUtil14()};
     $('#wu14Add').onclick=()=>{const g=wuGroup(),s=wuFresh(g.slots.length+1);commit(()=>{g.slots.push(s);syncWinSlots14()},{render:false});wuState.slotId=s.id;markSaving();renderWinUtil14()};
@@ -5100,7 +5129,7 @@ W_CleanTitle(title) {
 
   /* AHK v2 builder extension: emergency stop + global collision + Client/Screen coordinate mode */
   const api=window.easy1HK13||{},baseBuild=api.buildAHK,baseIssues=api.generationIssues;
-  function coordModes14(scope){const q=[];const walk=nodes=>{for(const n of nodes||[]){if(['click','dblclick','move'].includes(n.type))q.push(n.coordMode||'Client');if(isContainer14(n))walk(n.children||[])}};if(scope==='current'){const a=currentAuto();if(a&&a.enabled!==false&&a.shortcut?.key)walk(a.nodes)}else for(const g of state.groups||[])for(const a of g.automations||[])if(a.enabled!==false&&a.shortcut?.key)walk(a.nodes);return q}
+  function coordModes14(scope){const q=[];const walk=nodes=>{for(const n of nodes||[]){if(['click','dblclick','move'].includes(n.type))q.push(n.coordMode||'Client');if(isContainer14(n))walk(n.children||[])}};if(scope==='current'){const a=currentAuto();if(a&&a.enabled!==false&&a.shortcut?.key)walk(a.nodes)}else for(const g of state.groups||[])if(g.enabled!==false)for(const a of g.automations||[])if(a.enabled!==false&&a.shortcut?.key)walk(a.nodes);return q}
   function escAhk14(s){return String(s||'').replace(/`/g,'``').replace(/"/g,'`"').replace(/\r?\n/g,' ')}
   function winToolsAHK14(scope='all'){
     const bindings=[];
@@ -5116,7 +5145,9 @@ W_CleanTitle(title) {
       if(d.id==='desktopHop')needHopFn=true;
     }
     if(scope==='all'){
-      for(const g of state.windowSlotGroups||[])for(const ws of g.slots||[]){
+      for(const g of state.windowSlotGroups||[]){
+        if(g.enabled===false)continue;
+        for(const ws of g.slots||[]){
         if(ws.enabled===false)continue;
         const sKey=escAhk14(ws.id),sName=escAhk14(ws.name||'창 슬롯');
         if(ws.remember?.key||modifierOnlyInfo156(ws.remember)){
@@ -5134,6 +5165,7 @@ W_CleanTitle(title) {
             bindings.push(`${cond?'#HotIf '+cond+'\r\n':''}${lbl}::E1_WinSlotRecall("${sKey}", "${sName}")\r\n${cond?'#HotIf\r\n':''}`);
             needSlotFns=true;
           }
+        }
         }
       }
     }
@@ -7826,9 +7858,14 @@ body .app .statusbar{
   border:1px solid var(--line-strong);
 }
 .keymap-group-toggle1510{
+  border-color:rgba(79,140,255,.45)!important;
+  background:rgba(79,140,255,.16)!important;
+  color:#8ab4ff!important;
+}
+.keymap-group-toggle1510.off{
   border-color:var(--line)!important;
   background:var(--elevated)!important;
-  color:var(--text2)!important;
+  color:var(--muted)!important;
 }
 
 /* Modals, Popovers, Action Picker, Hotkey Capture, AHK Build Dialog */
