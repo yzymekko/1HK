@@ -598,7 +598,8 @@ function E1_applyDefaultDelay145(node){
     <section class="files-layout" id="filesLayout" hidden aria-live="polite">
       <aside class="files-sidebar" id="filesSidebar">
         <div class="files-side-head">
-          <div class="files-side-title"><strong>파일작업</strong><span id="filesTotalCount">0</span></div>
+          <div class="files-side-title"><strong>파일작업</strong><button type="button" class="keymap-group-toggle1510" id="filesGroupToggle" title="현재 그룹 활성/비활성">ON</button><span id="filesTotalCount">0</span></div>
+          <div class="keymap-group-row" style="margin-top:8px"><select id="filesGroup"></select><button type="button" class="keymap-square" id="filesGroupAdd" title="그룹 추가">+</button><button type="button" class="keymap-square" id="filesGroupMore" title="그룹 관리">⋯</button></div>
         </div>
         <label class="files-search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="filesSearch" placeholder="파일 작업 검색"></label>
         <div class="files-rule-head"><span>PORTALS</span><button type="button" id="filesJobAdd">+ 새 작업</button></div>
@@ -1790,6 +1791,7 @@ body.module-view #addActionTop{display:none}
 @media(max-width:1100px){.files-main-inner{width:min(100% - 34px,850px)}}
 @media(max-width:840px){.files-layout{display:block;position:absolute}.files-sidebar{position:absolute;z-index:30;left:0;top:0;bottom:0;width:min(290px,86vw);transform:translateX(-105%);visibility:hidden;transition:transform .16s ease,visibility .16s;box-shadow:16px 0 34px rgba(16,24,40,.11)}.files-layout.list-open .files-sidebar{transform:translateX(0);visibility:visible}.files-main{height:100%}.files-main-inner{width:min(100% - 30px,850px);padding-top:20px}.files-mobile-list{display:inline-flex}.files-title p{max-width:520px}}
 @media(max-width:620px){.files-main-inner{width:calc(100% - 22px);padding-bottom:70px}.files-head{gap:8px}.files-head-actions .btn .txt{display:none}.files-head-actions .btn{width:36px;padding:0}.files-title h1{font-size:19px}.files-title p{font-size:10px}.files-grid{grid-template-columns:1fr}.files-field.wide{grid-column:auto}.files-hero-card{align-items:flex-start;flex-wrap:wrap}.files-switch{margin-left:49px}.files-preview-row{grid-template-columns:64px minmax(0,1fr)}}
+.files-side-title strong{margin-right:auto}.files-item.off,.files-item.group-off{opacity:.5}
 </style>
 \n<script id="v011-files-script">
 (()=>{
@@ -1798,32 +1800,50 @@ body.module-view #addActionTop{display:none}
   const OP_LABEL={move:'이동',copy:'복사',rename:'이름변경',openWith:'프로그램 실행',openPath:'파일·폴더 열기'};
   const RENAME_LABEL={none:'변경 없음',prefix:'앞에 붙이기',suffix:'뒤에 붙이기',replace:'찾아 바꾸기'};
   const COLLISION_LABEL={number:'번호 붙이기',skip:'건너뛰기',overwrite:'덮어쓰기'};
-  const fu={id:'',query:''};
+  const fu={groupId:'',id:'',query:''};
+  function syncFiles11(){
+    if(!Array.isArray(state.fileJobGroups))return;
+    state.fileJobs=state.fileJobGroups.flatMap(g=>Array.isArray(g.jobs)?g.jobs:[]);
+  }
   function ensure11(){
     let changed=false;
-    if(!Array.isArray(state.fileJobs)){state.fileJobs=[];changed=true}
-    for(const j of state.fileJobs){
-      if(!j.id){j.id=uid('filejob');changed=true}
-      if(typeof j.name!=='string')j.name='파일 작업';
-      if(!j.shortcut||typeof j.shortcut!=='object')j.shortcut=EMPTY11();
-      if(!['move','copy','rename','openWith','openPath'].includes(j.operation))j.operation='move';
-      if(typeof j.target!=='string')j.target='';
-      if(typeof j.programPath!=='string')j.programPath='';
-      if(!['folder','file'].includes(j.targetKind))j.targetKind='folder';
-      if(typeof j.path!=='string')j.path='';
-      if(!['reuse','new'].includes(j.behavior))j.behavior='reuse';
-      if(!['none','prefix','suffix','replace'].includes(j.renameMode))j.renameMode='none';
-      for(const k of ['prefix','suffix','find','replacement'])if(typeof j[k]!=='string')j[k]='';
-      if(!['number','skip','overwrite'].includes(j.collision))j.collision='number';
-      if(typeof j.createTarget!=='boolean')j.createTarget=true;
-      if(typeof j.openTarget!=='boolean')j.openTarget=false;
-      if(typeof j.enabled!=='boolean')j.enabled=true;
+    if(!Array.isArray(state.fileJobGroups)||!state.fileJobGroups.length){
+      const legacy=Array.isArray(state.fileJobs)?state.fileJobs.slice():[];
+      state.fileJobGroups=[{id:uid('fgrp'),name:'기본',enabled:true,jobs:legacy}];
+      changed=true;
     }
+    for(const g of state.fileJobGroups){
+      if(!g.id){g.id=uid('fgrp');changed=true}
+      if(typeof g.name!=='string'||!g.name.trim())g.name='기본';
+      if(typeof g.enabled!=='boolean')g.enabled=true;
+      if(!Array.isArray(g.jobs)){g.jobs=[];changed=true}
+      for(const j of g.jobs){
+        if(!j.id){j.id=uid('filejob');changed=true}
+        if(typeof j.name!=='string')j.name='파일 작업';
+        if(!j.shortcut||typeof j.shortcut!=='object')j.shortcut=EMPTY11();
+        if(!['move','copy','rename','openWith','openPath'].includes(j.operation))j.operation='move';
+        if(typeof j.target!=='string')j.target='';
+        if(typeof j.programPath!=='string')j.programPath='';
+        if(!['folder','file'].includes(j.targetKind))j.targetKind='folder';
+        if(typeof j.path!=='string')j.path='';
+        if(!['reuse','new'].includes(j.behavior))j.behavior='reuse';
+        if(!['none','prefix','suffix','replace'].includes(j.renameMode))j.renameMode='none';
+        for(const k of ['prefix','suffix','find','replacement'])if(typeof j[k]!=='string')j[k]='';
+        if(!['number','skip','overwrite'].includes(j.collision))j.collision='number';
+        if(typeof j.createTarget!=='boolean')j.createTarget=true;
+        if(typeof j.openTarget!=='boolean')j.openTarget=false;
+        if(typeof j.enabled!=='boolean')j.enabled=true;
+      }
+    }
+    syncFiles11();
     if(changed)markSaving();
-    if(!state.fileJobs.some(x=>x.id===fu.id))fu.id=state.fileJobs[0]?.id||'';
+    if(!state.fileJobGroups.some(g=>g.id===fu.groupId))fu.groupId=state.fileJobGroups[0]?.id||'';
+    const curG=state.fileJobGroups.find(g=>g.id===fu.groupId)||state.fileJobGroups[0];
+    if(curG&&!curG.jobs.some(x=>x.id===fu.id))fu.id=curG.jobs[0]?.id||'';
   }
   ensure11();
-  function job11(){ensure11();return state.fileJobs.find(x=>x.id===fu.id)||state.fileJobs[0]||null}
+  function fGroup(){ensure11();return state.fileJobGroups.find(g=>g.id===fu.groupId)||state.fileJobGroups[0]||null}
+  function job11(){const g=fGroup();return g?.jobs?.find(x=>x.id===fu.id)||g?.jobs?.[0]||null}
   function fresh11(){return{id:uid('filejob'),name:'새 파일 작업',shortcut:EMPTY11(),operation:'move',target:'',programPath:'',targetKind:'folder',path:'',behavior:'reuse',renameMode:'none',prefix:'',suffix:'',find:'',replacement:'',collision:'number',createTarget:true,openTarget:false,enabled:true}}
   function opts11(items,val){return items.map(([v,l])=>`<option value="${esc(v)}" ${String(v)===String(val)?'selected':''}>${esc(l)}</option>`).join('')}
   function splitName11(name){const i=name.lastIndexOf('.');return i>0?{base:name.slice(0,i),ext:name.slice(i)}:{base:name,ext:''}}
@@ -1850,26 +1870,43 @@ body.module-view #addActionTop{display:none}
   const baseConflict11=findHotkeyConflict;
   findHotkeyConflict=function(h,exceptId=''){
     const base=baseConflict11(h,exceptId);if(base)return base;const sig=hotkeySignature(h);if(!sig)return null;
-    for(const j of state.fileJobs||[])if(j.enabled!==false&&j.id!==exceptId&&hotkeySignature(j.shortcut)===sig)return{g:{name:'파일작업'},a:{name:j.name||'파일 작업'}};
+    for(const g of state.fileJobGroups||[]){
+      if(g.enabled===false)continue;
+      for(const j of g.jobs||[])if(j.enabled!==false&&j.id!==exceptId&&hotkeySignature(j.shortcut)===sig)return{g:{name:`파일작업 · ${g.name}`},a:{name:j.name||'파일 작업'}};
+    }
     return null;
   };
   function renderList11(){
-    ensure11();const q=fu.query.trim().toLowerCase(),items=state.fileJobs.filter(j=>!q||(j.name+' '+formatHotkey(j.shortcut)+' '+OP_LABEL[j.operation]+' '+(j.path||'')).toLowerCase().includes(q)).slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ko',{numeric:true,sensitivity:'base'}));
+    ensure11();
+    const g=fGroup(),q=fu.query.trim().toLowerCase();
+    const items=(g?.jobs||[]).filter(j=>!q||(j.name+' '+formatHotkey(j.shortcut)+' '+OP_LABEL[j.operation]+' '+(j.path||'')).toLowerCase().includes(q)).slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ko',{numeric:true,sensitivity:'base'}));
     $('#filesTotalCount').textContent=state.fileJobs.length;
-    $('#filesList').innerHTML=items.length?items.map(j=>`<button type="button" class="files-item ${j.id===fu.id?'active':''}" data-file-id="${j.id}"><span class="files-item-icon">${ICONS.folder}</span><span class="files-item-main"><strong>${esc(j.name||'파일 작업')}</strong><small>${esc(formatHotkey(j.shortcut))}</small></span><span class="files-item-badge">${esc(j.operation==='openPath'?(j.targetKind==='file'?'파일 열기':'폴더 열기'):(OP_LABEL[j.operation]||'작업'))}</span></button>`).join(''):`<div class="files-list-empty">${q?'검색 결과가 없습니다.':'파일 작업이 없습니다.<br>「새 작업」으로 시작하세요.'}</div>`;
+    const gSel=$('#filesGroup');
+    if(gSel)gSel.innerHTML=state.fileJobGroups.map(x=>`<option value="${x.id}" ${x.id===g?.id?'selected':''}>${esc(x.name)}${x.enabled===false?' · OFF':''}</option>`).join('');
+    const gt=$('#filesGroupToggle');
+    if(gt&&g){
+      const off=g.enabled===false;
+      gt.textContent=off?'OFF':'ON';
+      gt.classList.toggle('off',off);
+      gt.setAttribute('aria-pressed',off?'false':'true');
+    }
+    $('#filesList').innerHTML=items.length?items.map(j=>`<button type="button" class="files-item ${j.id===fu.id?'active':''} ${j.enabled===false?'off':''} ${g?.enabled===false?'group-off':''}" data-file-id="${j.id}"><span class="files-item-icon">${ICONS.folder}</span><span class="files-item-main"><strong>${esc(j.name||'파일 작업')}</strong><small>${esc(formatHotkey(j.shortcut))}</small></span><span class="files-item-badge">${esc(j.enabled===false?'OFF':(j.operation==='openPath'?(j.targetKind==='file'?'파일 열기':'폴더 열기'):(OP_LABEL[j.operation]||'작업')))}</span></button>`).join(''):`<div class="files-list-empty">${q?'검색 결과가 없습니다.':'이 그룹에 파일 작업이 없습니다.<br>「새 작업」으로 시작하세요.'}</div>`;
     $$('[data-file-id]',layout).forEach(b=>b.onclick=()=>{fu.id=b.dataset.fileId;layout.classList.remove('list-open');renderFiles11()});
   }
   function renderEditor11(){
-    const j=job11(),ed=$('#filesEditor');$('#filesPageTitle').textContent=j?.name||'파일작업';$('#filesDuplicateBtn').disabled=!j;$('#filesDeleteBtn').disabled=!j;
-    if(!j){ed.innerHTML=`<div class="files-empty"><strong>파일 작업이 없습니다.</strong><span>왼쪽의 「새 작업」으로 첫 포탈을 만드세요.</span></div>`;return}
+    const g=fGroup(),j=job11(),ed=$('#filesEditor');$('#filesPageTitle').textContent=j?.name||'파일작업';$('#filesDuplicateBtn').disabled=!j;$('#filesDeleteBtn').disabled=!j;
+    const groupOffNotice=g&&g.enabled===false?`<div class="files-warning">현재 「${esc(g.name)}」 그룹이 <b>OFF</b> 상태입니다. 그룹을 ON으로 켜야 이 그룹의 파일작업 단축키가 생성·실행됩니다.</div>`:'';
+    if(!j){ed.innerHTML=`${groupOffNotice}<div class="files-empty"><strong>파일 작업이 없습니다.</strong><span>왼쪽의 「새 작업」으로 첫 포탈을 만드세요.</span></div>`;return}
     const sample='보고서.pdf',result=renamed11(sample,j),issues=issue11(j),isOpenWith=j.operation==='openWith',isOpenPath=j.operation==='openPath',isFileKind=j.targetKind==='file';
     ed.innerHTML=`<div class="files-editor">
+      ${groupOffNotice}
       <section class="files-hero-card"><span class="files-hero-icon">${ICONS.folder}</span><div class="files-hero-copy"><strong>${esc(j.name)}</strong><small>${isOpenPath?'단축키를 누르면 지정한 파일 또는 폴더를 바로 엽니다.':'Windows 탐색기에서 선택한 파일을 대상으로 실행합니다.'}</small></div><label class="files-switch"><input type="checkbox" data-file-field="enabled" ${j.enabled!==false?'checked':''}>사용</label></section>
       ${issues.length?`<div class="files-warning">설정 확인 · ${esc(issues.join(' · '))}</div>`:''}
       <section class="files-card"><div class="files-card-title">기본 설정</div><div class="files-grid">
         <label class="files-field wide"><span>작업 이름</span><input data-file-field="name" value="${esc(j.name)}" placeholder="예: 계약서 보관"></label>
         <label class="files-field"><span>작업 방식</span><select data-file-field="operation">${opts11([['move','이동'],['copy','복사'],['rename','이름변경만'],['openWith','지정 프로그램으로 열기'],['openPath','특정 파일·폴더 열기']],j.operation)}</select></label>
         <div class="files-field"><span>실행 단축키</span><button type="button" class="files-shortcut-button" id="filesShortcutBtn">${ICONS.keyboard}<b>${esc(formatHotkey(j.shortcut))}</b><em>설정</em></button></div>
+        <label class="files-field wide"><span>작업 그룹</span><select id="filesGroupMove">${state.fileJobGroups.map(x=>`<option value="${x.id}" ${x.id===g?.id?'selected':''}>${esc(x.name)}${x.enabled===false?' · OFF':''}</option>`).join('')}</select></label>
         ${isOpenPath?`
           <label class="files-field"><span>대상 종류</span><select data-file-field="targetKind">${opts11([['folder','폴더'],['file','파일']],j.targetKind||'folder')}</select></label>
           <label class="files-field"><span>열기 방식</span><select data-file-field="behavior">${opts11([['reuse','이미 열려 있으면 창 활성화'],['new','항상 새로 열기']],j.behavior||'reuse')}</select></label>
@@ -1887,11 +1924,21 @@ body.module-view #addActionTop{display:none}
     </div>`;
     bindEditor11();
   }
-  function renderFiles11(){ensure11();renderList11();renderEditor11();if(!layout.hidden){$('#crumbGroup').textContent='파일작업';$('#crumbAuto').textContent=job11()?.name||'포탈';$('#statusGroup').textContent='파일작업';$('#statusAuto').textContent=job11()?.name||'작업 없음';$('#statusNodes').textContent=`포탈 ${state.fileJobs.length}`}}
-  function saveField11(el){const j=job11();if(!j)return;const k=el.dataset.fileField;let v=el.type==='checkbox'?el.checked:el.value;commit(()=>{const x=state.fileJobs.find(z=>z.id===j.id);if(x)x[k]=v},{render:false});if(['operation','renameMode','targetKind','behavior'].includes(k))renderFiles11();else{if(k==='name'){renderList11();$('#filesPageTitle').textContent=v||'파일작업';const h=$('.files-hero-copy strong',layout);if(h)h.textContent=v||'파일작업'}markSaving()}}
+  function renderFiles11(){ensure11();renderList11();renderEditor11();if(!layout.hidden){const g=fGroup();$('#crumbGroup').textContent=`파일작업 · ${g?.name||'기본'}`;$('#crumbAuto').textContent=job11()?.name||'포탈';$('#statusGroup').textContent=g?.name||'파일작업';$('#statusAuto').textContent=job11()?.name||'작업 없음';$('#statusNodes').textContent=`포탈 ${state.fileJobs.length}`}}
+  function saveField11(el){const g=fGroup(),j=job11();if(!g||!j)return;const k=el.dataset.fileField;let v=el.type==='checkbox'?el.checked:el.value;commit(()=>{const grp=state.fileJobGroups.find(z=>z.id===g.id);const x=grp?.jobs?.find(z=>z.id===j.id);if(x)x[k]=v;syncFiles11()},{render:false});if(['operation','renameMode','targetKind','behavior'].includes(k))renderFiles11();else{if(k==='name'){renderList11();$('#filesPageTitle').textContent=v||'파일작업';const h=$('.files-hero-copy strong',layout);if(h)h.textContent=v||'파일작업'}else if(k==='enabled'){renderList11()}markSaving()}}
   function bindEditor11(){
     $$('[data-file-field]',layout).forEach(el=>{const evt=el.type==='checkbox'||el.tagName==='SELECT'?'change':'change';el.addEventListener(evt,()=>saveField11(el));if(el.tagName==='INPUT'&&el.type!=='checkbox')el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.blur()}})});
-    $('#filesShortcutBtn')?.addEventListener('click',()=>{const j=job11();if(!j)return;openHotkeyEditor({mode:'shortcut',title:`${j.name} · 실행 단축키`,value:j.shortcut,exceptAutoId:j.id,onApply:v=>{commit(()=>{const x=state.fileJobs.find(z=>z.id===j.id);if(x)x.shortcut=v},{render:false});renderFiles11();toast('파일작업 단축키를 저장했습니다.','good')}})});
+    $('#filesShortcutBtn')?.addEventListener('click',()=>{const g=fGroup(),j=job11();if(!g||!j)return;openHotkeyEditor({mode:'shortcut',title:`${j.name} · 실행 단축키`,value:j.shortcut,exceptAutoId:j.id,onApply:v=>{commit(()=>{const grp=state.fileJobGroups.find(z=>z.id===g.id);const x=grp?.jobs?.find(z=>z.id===j.id);if(x)x.shortcut=v;syncFiles11()},{render:false});renderFiles11();toast('파일작업 단축키를 저장했습니다.','good')}})});
+    $('#filesGroupMove')?.addEventListener('change',e=>{
+      const g=fGroup(),j=job11(),gid=e.target.value;if(!g||!j||gid===g.id)return;
+      commit(()=>{
+        const src=state.fileJobGroups.find(x=>x.id===g.id),dst=state.fileJobGroups.find(x=>x.id===gid);
+        if(!src||!dst)return;
+        const idx=src.jobs.findIndex(x=>x.id===j.id);if(idx<0)return;
+        const [item]=src.jobs.splice(idx,1);dst.jobs.push(item);fu.groupId=gid;fu.id=item.id;syncFiles11();
+      },{render:false});
+      markSaving();renderFiles11();toast('작업 그룹을 이동했습니다.','good');
+    });
   }
   function showFiles11(){
     ui.view='files';closeInspector();$('#automationLayout').hidden=true;$('#collectionsLayout').hidden=true;$('#clipboardLayout').hidden=true;$('#replaceLayout').hidden=true;$('#keymapLayout').hidden=true;$('#modulePlaceholder').hidden=true;layout.hidden=false;document.body.classList.remove('module-view','collection-view','clipboard-view','replace-view','keymap-view');document.body.classList.add('files-view');$$('.nav-btn').forEach(b=>b.classList.remove('active'));$('#filesNavBtn').classList.add('active');renderFiles11();
@@ -1901,9 +1948,33 @@ body.module-view #addActionTop{display:none}
   ['#automationNavBtn','#replaceNavBtn','#keymapNavBtn','#clipboardNavBtn','#collectionNavBtn','#railHome','#topBrand'].forEach(sel=>$(sel)?.addEventListener('click',()=>hideFiles11(),true));
   $('#filesMobileList')?.addEventListener('click',()=>layout.classList.toggle('list-open'));
   $('#filesSearch')?.addEventListener('input',e=>{fu.query=e.target.value;renderList11()});
-  $('#filesJobAdd')?.addEventListener('click',()=>{let id='';commit(()=>{const j=fresh11();state.fileJobs.push(j);id=j.id},{render:false});fu.id=id;renderFiles11();toast('파일 작업을 추가했습니다.','good')});
-  $('#filesDuplicateBtn')?.addEventListener('click',()=>{const j=job11();if(!j)return;const live={};$$('[data-file-field]',layout).forEach(el=>{live[el.dataset.fileField]=el.type==='checkbox'?el.checked:el.value});let id='';commit(()=>{const cp={...clone(j),...live};cp.id=uid('filejob');cp.name=(cp.name||j.name||'파일 작업')+' 복사본';state.fileJobs.splice(state.fileJobs.indexOf(j)+1,0,cp);id=cp.id},{render:false});fu.id=id;renderFiles11();toast('파일 작업을 복제했습니다.','good')});
-  $('#filesDeleteBtn')?.addEventListener('click',()=>{const j=job11();if(!j||!confirm(`「${j.name}」 파일 작업을 삭제할까요?`))return;commit(()=>{state.fileJobs=state.fileJobs.filter(x=>x.id!==j.id)},{render:false});fu.id=state.fileJobs[0]?.id||'';renderFiles11();toast('파일 작업을 삭제했습니다.')});
+  const gm11=$('#filesGroupMore');if(gm11&&ICONS?.more)gm11.innerHTML=ICONS.more;
+  const ui13_11=()=>window.easy1HK13UI||{};
+  $('#filesGroup')?.addEventListener('change',e=>{fu.groupId=e.target.value;fu.id='';renderFiles11()});
+  $('#filesGroupToggle')?.addEventListener('click',()=>{
+    const g=fGroup();if(!g)return;
+    const next=g.enabled===false;
+    commit(()=>{g.enabled=next},{render:false});
+    markSaving();renderFiles11();
+    toast(next?`「${g.name}」 그룹을 사용합니다.`:`「${g.name}」 그룹을 비활성화했습니다.`,next?'good':'');
+  });
+  $('#filesGroupAdd')?.addEventListener('click',()=>{
+    ui13_11().openName13?.({title:'새 파일작업 그룹',value:'새 그룹',onApply:name=>{
+      commit(()=>{const g={id:uid('fgrp'),name,enabled:true,jobs:[]};state.fileJobGroups.push(g);fu.groupId=g.id;fu.id='';syncFiles11()},{render:false});
+      markSaving();renderFiles11();toast(`「${name}」 그룹을 추가했습니다.`,'good');
+    }});
+  });
+  $('#filesGroupMore')?.addEventListener('click',()=>{
+    const g=fGroup();if(!g)return;
+    ui13_11().openGroupManager13?.({
+      title:'파일작업 그룹 관리',group:g,countLabel:`작업 ${g.jobs.length}개`,canDelete:state.fileJobGroups.length>1,
+      onRename:name=>{commit(()=>{g.name=name},{render:false});markSaving();renderFiles11()},
+      onDelete:()=>{if(confirm(`「${g.name}」 그룹을 삭제할까요? 작업도 함께 삭제됩니다.`)){commit(()=>{state.fileJobGroups=state.fileJobGroups.filter(x=>x.id!==g.id);fu.groupId=state.fileJobGroups[0]?.id||'';fu.id='';syncFiles11()},{render:false});markSaving();renderFiles11()}}
+    });
+  });
+  $('#filesJobAdd')?.addEventListener('click',()=>{const g=fGroup();if(!g)return;let id='';commit(()=>{const j=fresh11();g.jobs.push(j);id=j.id;syncFiles11()},{render:false});fu.id=id;renderFiles11();toast('파일 작업을 추가했습니다.','good')});
+  $('#filesDuplicateBtn')?.addEventListener('click',()=>{const g=fGroup(),j=job11();if(!g||!j)return;const live={};$$('[data-file-field]',layout).forEach(el=>{live[el.dataset.fileField]=el.type==='checkbox'?el.checked:el.value});let id='';commit(()=>{const cp={...clone(j),...live};cp.id=uid('filejob');cp.name=(cp.name||j.name||'파일 작업')+' 복사본';g.jobs.splice(g.jobs.indexOf(j)+1,0,cp);id=cp.id;syncFiles11()},{render:false});fu.id=id;renderFiles11();toast('파일 작업을 복제했습니다.','good')});
+  $('#filesDeleteBtn')?.addEventListener('click',()=>{const g=fGroup(),j=job11();if(!g||!j||!confirm(`「${j.name}」 파일 작업을 삭제할까요?`))return;commit(()=>{g.jobs=g.jobs.filter(x=>x.id!==j.id);syncFiles11()},{render:false});fu.id=g.jobs[0]?.id||'';renderFiles11();toast('파일 작업을 삭제했습니다.')});
   const u11=undo,r11=redo;undo=function(){u11();ensure11();if(!layout.hidden)renderFiles11()};redo=function(){r11();ensure11();if(!layout.hidden)renderFiles11()};$('#undoBtn').onclick=()=>undo();$('#redoBtn').onclick=()=>redo();
   document.title='easy-1HK 1.7.7';
   const st11=$('.statusbar .status-pill.good b');if(st11)st11.textContent='1.7.7';
@@ -2070,22 +2141,26 @@ body.module-view #addActionTop{display:none}
       (c.slots||[]).forEach((x,i)=>{if(x.enabled===false)return;if(x.copy?.key)addHK(x.copy,`클립보드 슬롯 ${i+1} · 복사`,x.id+':copy');if(x.paste?.key)addHK(x.paste,`클립보드 슬롯 ${i+1} · 붙여넣기`,x.id+':paste')});
       (c.smart||[]).forEach((r,i)=>{if(r.enabled!==false&&r.shortcut?.key)addHK(r.shortcut,`스마트 가공 · ${r.name||r.mode||i+1}`,r.id)});
     }
-    for(const j of state.fileJobs||[]){
-      if(j.enabled===false)continue;const w=`파일작업 · ${j.name}`;
-      if(j.shortcut?.key)addHK(j.shortcut,w,j.id);else add('warn',w,'실행 단축키가 없어 생성하지 않습니다.');
-      if(j.operation==='openPath'){
-        if(!String(j.path||'').trim())add('error',w,j.targetKind==='file'?'열 파일 경로가 비어 있습니다.':'열 폴더 경로가 비어 있습니다.');
-        continue;
+    const fGroups=Array.isArray(state.fileJobGroups)&&state.fileJobGroups.length?state.fileJobGroups:[{name:'기본',enabled:true,jobs:state.fileJobs||[]}];
+    for(const fg of fGroups){
+      if(fg.enabled===false)continue;
+      for(const j of fg.jobs||[]){
+        if(j.enabled===false)continue;const w=`파일작업 · ${fg.name} / ${j.name}`;
+        if(j.shortcut?.key)addHK(j.shortcut,w,j.id);else add('warn',w,'실행 단축키가 없어 생성하지 않습니다.');
+        if(j.operation==='openPath'){
+          if(!String(j.path||'').trim())add('error',w,j.targetKind==='file'?'열 파일 경로가 비어 있습니다.':'열 폴더 경로가 비어 있습니다.');
+          continue;
+        }
+        if(j.operation==='openWith'){
+          if(!String(j.programPath||'').trim())add('error',w,'실행할 프로그램 경로가 비어 있습니다.');
+          continue;
+        }
+        if(j.operation!=='rename'&&!String(j.target||'').trim())add('error',w,'대상 폴더가 비어 있습니다.');
+        if(j.operation==='rename'&&j.renameMode==='none')add('error',w,'이름변경만 작업은 이름변경 방식을 지정해야 합니다.');
+        if(j.renameMode==='prefix'&&!String(j.prefix||''))add('error',w,'앞에 붙일 문자가 비어 있습니다.');
+        if(j.renameMode==='suffix'&&!String(j.suffix||''))add('error',w,'뒤에 붙일 문자가 비어 있습니다.');
+        if(j.renameMode==='replace'&&!String(j.find||''))add('error',w,'찾아 바꾸기의 찾을 내용이 비어 있습니다.');
       }
-      if(j.operation==='openWith'){
-        if(!String(j.programPath||'').trim())add('error',w,'실행할 프로그램 경로가 비어 있습니다.');
-        continue;
-      }
-      if(j.operation!=='rename'&&!String(j.target||'').trim())add('error',w,'대상 폴더가 비어 있습니다.');
-      if(j.operation==='rename'&&j.renameMode==='none')add('error',w,'이름변경만 작업은 이름변경 방식을 지정해야 합니다.');
-      if(j.renameMode==='prefix'&&!String(j.prefix||''))add('error',w,'앞에 붙일 문자가 비어 있습니다.');
-      if(j.renameMode==='suffix'&&!String(j.suffix||''))add('error',w,'뒤에 붙일 문자가 비어 있습니다.');
-      if(j.renameMode==='replace'&&!String(j.find||''))add('error',w,'찾아 바꾸기의 찾을 내용이 비어 있습니다.');
     }
     return issues;
   }
@@ -3031,16 +3106,20 @@ body.module-view #addActionTop{display:none}
   }
 
   function emitFiles12(out){
-    for(const j of state.fileJobs||[]){
-      if(j.enabled===false||!j.shortcut?.key)continue;
-      out.push(`; 파일작업 · ${comment(j.name)}`);
-      hotIfStart15(j.shortcut,out);
-      out.push(`${hotkeyLabel12(j.shortcut)}::`);
-      out.push('{');
-      if(j.operation==='openPath')out.push(`    E1_OpenPath(${q(j.path||'')}, ${q(j.targetKind==='file'?'file':'folder')}, ${j.behavior==='new'?'false':'true'})`);
-      else if(j.operation==='openWith')out.push(`    E1_OpenSelectedWith(${q(j.programPath||'')})`);
-      else out.push(`    E1_FilePortal(${q(j.operation)}, ${q(j.target||'')}, ${q(j.renameMode||'none')}, ${q(j.prefix||'')}, ${q(j.suffix||'')}, ${q(j.find||'')}, ${q(j.replacement||'')}, ${q(j.collision||'number')}, ${j.createTarget?'true':'false'}, ${j.openTarget?'true':'false'})`);
-      out.push('}');hotIfEnd15(j.shortcut,out);out.push('');
+    const fGroups=Array.isArray(state.fileJobGroups)&&state.fileJobGroups.length?state.fileJobGroups:[{name:'기본',enabled:true,jobs:state.fileJobs||[]}];
+    for(const fg of fGroups){
+      if(fg.enabled===false)continue;
+      for(const j of fg.jobs||[]){
+        if(j.enabled===false||!j.shortcut?.key)continue;
+        out.push(`; 파일작업 · ${comment(fg.name)} / ${comment(j.name)}`);
+        hotIfStart15(j.shortcut,out);
+        out.push(`${hotkeyLabel12(j.shortcut)}::`);
+        out.push('{');
+        if(j.operation==='openPath')out.push(`    E1_OpenPath(${q(j.path||'')}, ${q(j.targetKind==='file'?'file':'folder')}, ${j.behavior==='new'?'false':'true'})`);
+        else if(j.operation==='openWith')out.push(`    E1_OpenSelectedWith(${q(j.programPath||'')})`);
+        else out.push(`    E1_FilePortal(${q(j.operation)}, ${q(j.target||'')}, ${q(j.renameMode||'none')}, ${q(j.prefix||'')}, ${q(j.suffix||'')}, ${q(j.find||'')}, ${q(j.replacement||'')}, ${q(j.collision||'number')}, ${j.createTarget?'true':'false'}, ${j.openTarget?'true':'false'})`);
+        out.push('}');hotIfEnd15(j.shortcut,out);out.push('');
+      }
     }
   }
 
@@ -4334,7 +4413,7 @@ W_CleanTitle(title) {
     for(const g of state.keymapGroups||[])if(g.enabled!==false)for(const r of g.rules||[])if(r.enabled!==false)add(r.id,'키매핑',`${g.name} / ${r.name||formatHotkey(r.input)}`,r.input);
     for(const g of state.clipboardGroups||[])for(const sl of g.slots||[])if(sl.enabled!==false){add(sl.id+':copy','클립보드 슬롯',`${sl.name} · 복사`,sl.copy);add(sl.id+':paste','클립보드 슬롯',`${sl.name} · 붙여넣기`,sl.paste)}
     for(const g of state.windowSlotGroups||[])for(const ws of g.slots||[])if(ws.enabled!==false){add(ws.id+':remember','창버튼',`${ws.name||'창 슬롯'} · 창기억`,ws.remember);add(ws.id+':recall','창버튼',`${ws.name||'창 슬롯'} · 창리콜`,ws.recall)}
-    for(const j of state.fileJobs||[])if(j.enabled!==false)add(j.id,'파일작업',j.name||'파일작업',j.shortcut);
+    for(const fg of state.fileJobGroups||[])if(fg.enabled!==false)for(const j of fg.jobs||[])if(j.enabled!==false)add(j.id,'파일작업',`${fg.name} / ${j.name||'파일작업'}`,j.shortcut);
     return out;
   }
   function isBarePause14(h){return String(h?.key||'').toLowerCase()==='pause'&&!h.ctrl&&!h.alt&&!h.shift&&!h.win}
