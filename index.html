@@ -702,14 +702,18 @@ if(!state.version||!Array.isArray(state.groups)) state=freshState();
 function openIDB(){return new Promise((resolve,reject)=>{try{const r=indexedDB.open('easy1hk-v13',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('project'))r.result.createObjectStore('project')};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)}catch(e){reject(e)}})}
 async function idbSave(data){const db=await openIDB();return new Promise((resolve,reject)=>{const tx=db.transaction('project','readwrite');tx.objectStore('project').put(data,'main');tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}})}
 async function idbLoad(){const db=await openIDB();return new Promise((resolve,reject)=>{const tx=db.transaction('project','readonly'),r=tx.objectStore('project').get('main');r.onsuccess=()=>{db.close();resolve(r.result||null)};r.onerror=()=>{db.close();reject(r.error)}})}
-let ui={groupId:state.groups[0]?.id||'',autoId:state.groups[0]?.automations?.[0]?.id||'',query:'',focus:false,selectedNodeId:'',inspectorDraft:null};
+const LAST_GROUPS_KEY18='easy1hk.lastGroups.v1';
+function loadLastGroups18(){try{return JSON.parse(localStorage.getItem(LAST_GROUPS_KEY18)||'{}')||{}}catch{return {}}}
+function saveLastGroup18(section,groupId){if(!groupId)return;try{const m=loadLastGroups18();if(m[section]===groupId)return;m[section]=groupId;localStorage.setItem(LAST_GROUPS_KEY18,JSON.stringify(m))}catch{}}
+const _initAutoG18=state.groups.find(g=>g.id===loadLastGroups18().auto)||state.groups[0]||null;
+let ui={groupId:_initAutoG18?.id||'',autoId:_initAutoG18?.automations?.[0]?.id||'',query:'',focus:false,selectedNodeId:'',inspectorDraft:null};
 let undoStack=[],redoStack=[],saveTimer;
 function currentGroup(){return state.groups.find(g=>g.id===ui.groupId)||state.groups[0]||null}
 function currentAuto(){const g=currentGroup();return g?.automations?.find(a=>a.id===ui.autoId)||g?.automations?.[0]||null}
 function nodeById(id){return currentAuto()?.nodes?.find(n=>n.id===id)||null}
 function markSaving(){const s=$('#saveState');if(!s)return;s.classList.add('saving');s.classList.remove('error');s.querySelector('span:last-child').textContent='저장 중…';clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{if(localStorageOk){try{localStorage.setItem(STORAGE,JSON.stringify(state));s.classList.remove('saving','error');s.querySelector('span:last-child').textContent='자동저장됨';$('#libraryDataState')&&($('#libraryDataState').textContent='local');return}catch(e){localStorageOk=false}}try{await idbSave(clone(state));s.classList.remove('saving','error');s.querySelector('span:last-child').textContent='자동저장됨';$('#libraryDataState')&&($('#libraryDataState').textContent='indexedDB')}catch(e){s.classList.remove('saving','error');s.querySelector('span:last-child').textContent='이번 실행';$('#libraryDataState')&&($('#libraryDataState').textContent='session')}},80)}
 function commit(mutator,{render=true}={}){undoStack.push(clone(state));if(undoStack.length>60)undoStack.shift();redoStack=[];mutator(state);normalizeSelection();markSaving();if(render)renderAll();updateUndoRedo()}
-function normalizeSelection(){if(!state.groups.length){state.groups.push({id:uid('grp'),name:'새 그룹',automations:[]})}if(!state.groups.some(g=>g.id===ui.groupId))ui.groupId=state.groups[0].id;const g=currentGroup();if(!g.automations.some(a=>a.id===ui.autoId))ui.autoId=g.automations[0]?.id||'';if(ui.selectedNodeId&&!nodeById(ui.selectedNodeId))ui.selectedNodeId=''}
+function normalizeSelection(){if(!state.groups.length){state.groups.push({id:uid('grp'),name:'새 그룹',automations:[]})}if(!state.groups.some(g=>g.id===ui.groupId))ui.groupId=state.groups[0].id;saveLastGroup18('auto',ui.groupId);const g=currentGroup();if(!g.automations.some(a=>a.id===ui.autoId))ui.autoId=g.automations[0]?.id||'';if(ui.selectedNodeId&&!nodeById(ui.selectedNodeId))ui.selectedNodeId=''}
 function undo(){if(!undoStack.length)return;redoStack.push(clone(state));state=undoStack.pop();normalizeSelection();markSaving();renderAll();updateUndoRedo();toast('되돌렸습니다.')}
 function redo(){if(!redoStack.length)return;undoStack.push(clone(state));state=redoStack.pop();normalizeSelection();markSaving();renderAll();updateUndoRedo();toast('다시 실행했습니다.')}
 function updateUndoRedo(){$('#undoBtn').disabled=!undoStack.length;$('#redoBtn').disabled=!redoStack.length}
@@ -908,6 +912,7 @@ if(!localStorageOk){idbLoad().then(saved=>{if(saved&&Array.isArray(saved.groups)
   normalizeSelection=function(){
     if(!state.groups.length)state.groups.push({id:uid('grp'),name:'새 그룹',automations:[]});
     if(!state.groups.some(g=>g.id===ui.groupId))ui.groupId=state.groups[0].id;
+    saveLastGroup18('auto',ui.groupId);
     const g=currentGroup();if(!g.automations.some(a=>a.id===ui.autoId))ui.autoId=g.automations[0]?.id||'';
     const ids=allNodeIds();if(ui.selectedNodeId&&!ids.has(ui.selectedNodeId))ui.selectedNodeId='';
     for(const id of [...ui.selectedNodeIds])if(!ids.has(id))ui.selectedNodeIds.delete(id);
@@ -1808,7 +1813,7 @@ body.module-view #addActionTop{display:none}
   const OP_LABEL={move:'이동',copy:'복사',rename:'이름변경',openWith:'프로그램 실행',openPath:'파일·폴더 열기'};
   const RENAME_LABEL={none:'변경 없음',prefix:'앞에 붙이기',suffix:'뒤에 붙이기',replace:'찾아 바꾸기'};
   const COLLISION_LABEL={number:'번호 붙이기',skip:'건너뛰기',overwrite:'덮어쓰기'};
-  const fu={groupId:'',id:'',query:''};
+  const fu={groupId:loadLastGroups18().files||'',id:'',query:''};
   function syncFiles11(){
     if(!Array.isArray(state.fileJobGroups))return;
     state.fileJobs=state.fileJobGroups.flatMap(g=>Array.isArray(g.jobs)?g.jobs:[]);
@@ -1846,6 +1851,7 @@ body.module-view #addActionTop{display:none}
     syncFiles11();
     if(changed)markSaving();
     if(!state.fileJobGroups.some(g=>g.id===fu.groupId))fu.groupId=state.fileJobGroups[0]?.id||'';
+    saveLastGroup18('files',fu.groupId);
     const curG=state.fileJobGroups.find(g=>g.id===fu.groupId)||state.fileJobGroups[0];
     if(curG&&!curG.jobs.some(x=>x.id===fu.id))fu.id=curG.jobs[0]?.id||'';
   }
@@ -3770,7 +3776,8 @@ body.replace-view .replace-layout,body.keymap-view .keymap-layout,body.clipboard
 (()=>{
   const VERSION='0.13';
   const EMPTY=()=>({ctrl:'',alt:'',shift:'',win:'',key:''});
-  const ux={replaceGroupId:'',replaceRuleId:'',replaceQuery:'',keyGroupId:'',keyRuleId:'',keyQuery:'',clipGroupId:'',clipSlotId:'',clipQuery:''};
+  const _lg18=loadLastGroups18();
+  const ux={replaceGroupId:_lg18.replace||'',replaceRuleId:'',replaceQuery:'',keyGroupId:_lg18.keymap||'',keyRuleId:'',keyQuery:'',clipGroupId:_lg18.clip||'',clipSlotId:'',clipQuery:''};
 
   function boolish(v,def=true){const t=String(v??'').trim().toLowerCase();if(!t)return def;return !['0','false','no','n','off','비활성','아니오','x'].includes(t)}
   function openName13({title,label='이름',value='',onApply}){
@@ -3923,7 +3930,7 @@ body.replace-view .replace-layout,body.keymap-view .keymap-layout,body.clipboard
   rLayout.innerHTML=`<aside class="replace-sidebar"><div class="replace-side-head"><div class="replace-side-title"><strong>텍스트 대치</strong><button type="button" class="keymap-group-toggle1510" id="r13GroupToggle" title="현재 그룹 활성/비활성">ON</button><span id="r13Count">0</span></div><div class="replace-group-row"><select id="r13Group"></select><button type="button" class="replace-square" id="r13GroupAdd" title="그룹 추가">+</button><button type="button" class="replace-square" id="r13GroupMore" title="그룹 관리">${ICONS.more}</button></div></div><label class="replace-search">${ICONS.search}<input id="r13Search" placeholder="텍스트 대치 검색"></label><div class="bulk-tools"><span class="bulk-label">EXCEL</span><button type="button" id="r13Template">양식 다운로드</button><button type="button" id="r13Import">불러오기</button><input type="file" id="r13File" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></div><div class="replace-rule-head"><span>RULES</span><div class="replace-head-btns"><button type="button" id="r13SortName" title="메모(이름)순 정렬">이름순</button><button type="button" id="r13Add">+ 새 규칙</button></div></div><div class="replace-list" id="r13List"></div><div class="replace-sidebar-foot"><span>2.0</span><span>Excel ready</span></div></aside><section class="replace-main"><div class="replace-main-inner"><div class="replace-head"><div class="replace-title"><span class="replace-kicker">TEXT REPLACEMENT</span><h1 id="r13Title">텍스트 대치</h1><p>입력 문자열을 지정한 결과로 대치합니다.</p></div><div class="replace-head-actions"><button type="button" class="btn replace-mobile-list" id="r13Mobile">${ICONS.list||'☰'}<span class="txt">목록</span></button><button type="button" class="btn" id="r13Dup">복제</button><button type="button" class="btn danger" id="r13Del">삭제</button></div></div><div id="r13Editor"></div></div></section>`;
   function rGroup(){ensure13();return state.replaceGroups.find(g=>g.id===ux.replaceGroupId)||state.replaceGroups[0]}
   function rRule(){const g=rGroup();return g?.rules?.find(r=>r.id===ux.replaceRuleId)||g?.rules?.[0]||null}
-  function rNormalize(){ensure13();const g=rGroup();ux.replaceGroupId=g?.id||'';if(g&&!g.rules.some(r=>r.id===ux.replaceRuleId))ux.replaceRuleId=g.rules[0]?.id||''}
+  function rNormalize(){ensure13();const g=rGroup();ux.replaceGroupId=g?.id||'';saveLastGroup18('replace',ux.replaceGroupId);if(g&&!g.rules.some(r=>r.id===ux.replaceRuleId))ux.replaceRuleId=g.rules[0]?.id||''}
   function rFresh(){return{id:uid('rule'),name:'',trigger:'',replacement:'',mode:'all',caseSensitive:false,triggerOnSpace:true,keepSpace:true,enabled:true}}
   function modeKR(m){return m==='ko'?'한글':m==='en'?'영어':'All'}
   function rCompare13(a,b){
@@ -4002,7 +4009,7 @@ body.replace-view .replace-layout,body.keymap-view .keymap-layout,body.clipboard
   /* ---------- KEY MAPPING ---------- */
   const kLayout=$('#keymapLayout');
   kLayout.innerHTML=`<aside class="keymap-sidebar"><div class="keymap-side-head"><div class="keymap-side-title"><strong>키매핑</strong><button type="button" class="keymap-group-toggle1510" id="k13GroupToggle" title="현재 그룹 활성/비활성">ON</button><span id="k13Count">0</span></div><div class="keymap-group-row"><select id="k13Group"></select><button type="button" class="keymap-square" id="k13GroupAdd" title="그룹 추가">+</button><button type="button" class="keymap-square" id="k13GroupMore" title="그룹 관리">${ICONS.more}</button></div></div><label class="keymap-search">${ICONS.search}<input id="k13Search" placeholder="키매핑 검색"></label><div class="bulk-tools"><span class="bulk-label">EXCEL</span><button type="button" id="k13Template">양식 다운로드</button><button type="button" id="k13Import">불러오기</button><input type="file" id="k13File" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></div><div class="keymap-rule-head"><span>MAPPINGS</span><button type="button" id="k13Add">+ 새 매핑</button></div><div class="keymap-list" id="k13List"></div><div class="keymap-side-foot"><span>1.4</span><span>Excel ready</span></div></aside><section class="keymap-main"><div class="keymap-main-inner"><div class="keymap-head"><div class="keymap-title"><span class="keymap-kicker">KEY REMAPPING</span><h1 id="k13Title">키매핑</h1><p>입력 키 조합을 원하는 출력 키 조합으로 연결합니다.</p></div><div class="keymap-head-actions"><button type="button" class="btn keymap-mobile-list" id="k13Mobile"><span class="txt">목록</span></button><button type="button" class="btn" id="k13Dup">복제</button><button type="button" class="btn danger" id="k13Del">삭제</button></div></div><div id="k13Editor"></div></div></section>`;
-  function kGroup(){ensure13();return state.keymapGroups.find(g=>g.id===ux.keyGroupId)||state.keymapGroups[0]}function kRule(){const g=kGroup();return g?.rules?.find(r=>r.id===ux.keyRuleId)||g?.rules?.[0]||null}function kNormalize(){const g=kGroup();ux.keyGroupId=g?.id||'';if(g&&!g.rules.some(r=>r.id===ux.keyRuleId))ux.keyRuleId=g.rules[0]?.id||''}function kFresh(){return{id:uid('map'),name:'',input:EMPTY(),output:EMPTY(),holdEnabled:false,holdMs:200,holdOutput:EMPTY(),enabled:true}}
+  function kGroup(){ensure13();return state.keymapGroups.find(g=>g.id===ux.keyGroupId)||state.keymapGroups[0]}function kRule(){const g=kGroup();return g?.rules?.find(r=>r.id===ux.keyRuleId)||g?.rules?.[0]||null}function kNormalize(){const g=kGroup();ux.keyGroupId=g?.id||'';saveLastGroup18('keymap',ux.keyGroupId);if(g&&!g.rules.some(r=>r.id===ux.keyRuleId))ux.keyRuleId=g.rules[0]?.id||''}function kFresh(){return{id:uid('map'),name:'',input:EMPTY(),output:EMPTY(),holdEnabled:false,holdMs:200,holdOutput:EMPTY(),enabled:true}}
   function keyConflict13(input,id){const c=findHotkeyConflict(input,id);return c?`${c.g.name} / ${c.a.name}`:null}
   function renderK13(){
     kNormalize();const g=kGroup(),r=kRule(),q=ux.keyQuery.trim().toLowerCase();
@@ -4056,7 +4063,7 @@ body.replace-view .replace-layout,body.keymap-view .keymap-layout,body.clipboard
     numberKorean:'한글숫자(이천일백구십이)',
     digits:'숫자만 남기기'
   };
-  function cGroup(){ensure13();return state.clipboardGroups.find(g=>g.id===ux.clipGroupId)||state.clipboardGroups[0]}function cSlot(){const g=cGroup();return g?.slots?.find(s=>s.id===ux.clipSlotId)||g?.slots?.[0]||null}function cNorm(){const g=cGroup();ux.clipGroupId=g?.id||'';if(g&&!g.slots.some(s=>s.id===ux.clipSlotId))ux.clipSlotId=g.slots[0]?.id||''}
+  function cGroup(){ensure13();return state.clipboardGroups.find(g=>g.id===ux.clipGroupId)||state.clipboardGroups[0]}function cSlot(){const g=cGroup();return g?.slots?.find(s=>s.id===ux.clipSlotId)||g?.slots?.[0]||null}function cNorm(){const g=cGroup();ux.clipGroupId=g?.id||'';saveLastGroup18('clip',ux.clipGroupId);if(g&&!g.slots.some(s=>s.id===ux.clipSlotId))ux.clipSlotId=g.slots[0]?.id||''}
   function cFresh(n=1){return{id:uid('cslot'),name:`슬롯 ${n}`,enabled:true,copy:EMPTY(),paste:EMPTY(),rich:true,trim:false,removeLineBreaks:false,transformSource:'slot',transform:{mode:'none',extra:'',replacement:''}}}
   function clipConflict13(h,except=''){const c=findHotkeyConflict(h,except);return c?`${c.g.name} / ${c.a.name}`:null}
   function transformFields13(s){const t=s.transform||{mode:'none',extra:'',replacement:''};let extra='';if(t.mode==='remove')extra=`<div class="clip13-field wide"><label>삭제할 문자</label><input id="c13Extra" value="${esc(t.extra||'')}" placeholder="예: -"></div>`;else if(t.mode==='join')extra=`<div class="clip13-field wide"><label>줄바꿈을 바꿀 내용</label><input id="c13Extra" value="${esc(t.extra??' ')}" placeholder="예: 공백, /, ·"></div>`;else if(t.mode==='replace')extra=`<div class="clip13-field"><label>찾을 내용</label><input id="c13Extra" value="${esc(t.extra||'')}"></div><div class="clip13-field"><label>바꿀 내용</label><input id="c13Replacement" value="${esc(t.replacement||'')}"></div>`;return extra}
@@ -4778,12 +4785,13 @@ W_CleanTitle(title) {
 
   /* ---------- WINDOW BUTTONS (창버튼: 그룹 + 창기억 → 창리콜 슬롯) ---------- */
   const WIN_UTIL_ICON='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 14h8"/></svg>';
-  const wuState={groupId:'',slotId:'',query:''};
+  const wuState={groupId:loadLastGroups18().window||'',slotId:'',query:''};
   function wuGroup(){ensure14();return state.windowSlotGroups.find(g=>g.id===wuState.groupId)||state.windowSlotGroups[0]}
   function wuNorm(){
     ensure14();
     const g=wuGroup();
     wuState.groupId=g?.id||'';
+    saveLastGroup18('window',wuState.groupId);
     if(g&&!g.slots.some(s=>s.id===wuState.slotId))wuState.slotId=g.slots[0]?.id||'';
   }
   function wuSlot(){wuNorm();const g=wuGroup();return g?.slots?.find(s=>s.id===wuState.slotId)||g?.slots?.[0]||null}
